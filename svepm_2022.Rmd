@@ -1,17 +1,23 @@
 ---
-title: "SVEPM Workshop 2022"
+title: "Inferential modelling with wide data"
 output:
   html_document:
     df_print: paged
 ---
 ```{r  global_options, echo=FALSE}
-knitr::opts_chunk$set(error = FALSE, message = FALSE,
-warning = FALSE)
+knitr::opts_chunk$set(
+  error = FALSE, message = FALSE,
+  warning = FALSE
+)
 ```
 
 ## Introduction
 
-The following packages are required for these excersises. 
+Welcome to our workshop on inferential modelling with wide data. We hope you enjoy the session.
+
+This workshop will cover the problems associated with inferential modelling of high dimensional, wide data, suggest approaches to overcome them and provide hands-on training in the implementation of regularisation techniques, covariate selection stability and triangulation.
+
+The following packages are required for these exercises. 
 
 ```{r}
 library(Hmisc)
@@ -31,16 +37,15 @@ In order to appreciate the issues we will be discussing today, we have provided 
 The following function generates a dataset with "ncols" as the number of variables and "nrows" as the number of rows. 
 
 ```{r}
-generate_uncor_variables <- function(ncols, nrows){
-  df <- data.frame(replicate(ncols, rnorm(nrows, 0, 1)))
-  df
+generate_uncor_variables <- function(ncols, nrows) {
+  data_frame(replicate(ncols, rnorm(nrows, 0, 1)))
 }
 ```
 
-A dataset with 197 rows and 130 variables can be generated as follows: 
+A dataset with 197 rows and 130 variables can then be generated using this function as follows: 
 
 ```{r}
-variables <- generate_uncor_variables(ncols=130, nrows=197)
+variables <- generate_uncor_variables(ncols = 130, nrows = 197)
 ```
 
 This results in the following dataset being generated:
@@ -52,13 +57,12 @@ variables
 We can also generate an outcome variable, in this case randomly generated in the same manner, but renaming as "outcome"
 
 ```{r}
-generate_uncor_outcome <- function(nrows, seed=224){
-  set.seed(seed)
-  data.frame(replicate(1, rnorm(nrows, 0, 1))) %>%
+generate_uncor_outcome <- function(nrows) {
+  data_frame(replicate(1, rnorm(nrows, 0, 1))) %>%
     rename("outcome" = 1)
 }
 
-outcome <- generate_uncor_outcome(nrows=197)
+outcome <- generate_uncor_outcome(nrows = 197)
 
 outcome
 ```
@@ -66,31 +70,22 @@ outcome
 We can now bind together the uncorrelated, randomly generated variables, with the randomly generated outcome. 
 
 ```{r}
-df <- outcome %>%
+df_no_signal <- outcome %>%
   bind_cols(variables)
 ```
 
-This results in a dataset as follows: 
+This results in a dataset of 197 rows, with a single outcome variable, which has no relationship to the 130 columns as shown below. 
 
 ```{r}
-df
+df_no_signal
 ```
 
 ## Conventional approaches
 
-We will test a variety of models on this dataset. For future comparison let's set up a list where we can store model results
+The following function conducts univariable analysis to determine the association between a given variable and the outcome. A pearson/spearman rank correlation matrix is another option for this. 
 
 ```{r}
-model_results <- list()
-```
-
-
-The following function conducts univariable analysis to determine the association between a given variable and the outcome. 
-
-SPEARMAN/PEARSON/UNIVARIABLE MODEL available
-
-```{r}
-univariable_analysis <- function(data, variable){
+univariable_analysis <- function(data, variable) {
   data %>%
     lm(outcome ~ variable, .) %>%
     tidy() %>%
@@ -98,21 +93,22 @@ univariable_analysis <- function(data, variable){
 }
 ```
 
-EXAMPLE OF ONE VARIABLE
-
-
 This function can then be applied using map_df() to each column of the dataset individually and return a dataframe. 
 
 ```{r}
-univariable_outcomes <- map_df(df, ~univariable_analysis(data=df, variable=.), .id="variable")
+univariable_outcomes <- map_df(df_no_signal, ~ univariable_analysis(data = df_no_signal, variable = .), .id = "variable")
 ```
 
-A conventional approach would then filter at a given threshold (for example P<0.2) 
+A conventional approach would then filter at a given threshold (for example P<0.2).
 
 ```{r}
 univariable_outcomes_filtered <- univariable_outcomes %>%
   filter(p.value < 0.2)
+```
 
+This results in a table below of all of the variables that have a p-value of <0.2 to be carried forward into a multivariable model. 
+
+```{r}
 univariable_outcomes_filtered
 ```
 
@@ -126,51 +122,55 @@ variables_for_stepwise <- univariable_outcomes_filtered %>%
 These variables would subsequently be offered into a stepwise selection process such as the following
 
 ```{r}
-stepwise_model <- function(data, variables){
+stepwise_model <- function(data, variables) {
   data_selected <- data %>%
     select(variables)
-  
-  lm(outcome ~ ., data=data_selected) %>%
-    step(., direction="backward", trace = FALSE) %>%
+
+  lm(outcome ~ ., data = data_selected) %>%
+    step(., direction = "backward", trace = FALSE) %>%
     tidy() %>%
     filter(p.value < 0.05) %>%
     rename(variable = term)
 }
 
-model_results$prefiltration <- stepwise_model(data = df, variables = variables_for_stepwise)
+prefiltration_results <- stepwise_model(data = df_no_signal, variables = variables_for_stepwise)
 
-model_results$prefiltration
+prefiltration_results
 ```
 
 ## Data with a true signal 
 
+We will test a variety of models on this dataset. For future comparison let's set up a list where we can store model results
+
 ```{r}
-generate_data_with_signal <- function(nrow, ncol, n_causal_vars, amplitude){
-  set.seed(59719)
-# Generate the variables from a multivariate normal distribution
-mu = rep(0,ncol)
-rho = 0.25
-sigma = toeplitz(rho^(0:(ncol-1))) #  Symmetric Toeplitz Matrix
-X = matrix(rnorm(nrow*ncol),nrow) %*% chol(sigma) # multiply matrices Choleski Decomposition. Description. Compute the Choleski factorization of a real symmetric positive-definite square matrix)
+model_results <- list()
+```
 
-# Generate the response from a linear model
-nonzero = sample(ncol, n_causal_vars) # select the id of 'true' variables
-beta = amplitude * (1:ncol %in% nonzero) / sqrt(nrow) # vector of effect sizes to pick out true varaiables
-beta_value =  amplitude / sqrt(nrow)
-outcome.sample = function(X) X %*% beta + rnorm(nrow) # calculate outcome from true vars and error
-outcome = outcome.sample(X)
+```{r}
+generate_data_with_signal <- function(nrow, ncol, n_causal_vars, amplitude) {
+  # Generate the variables from a multivariate normal distribution
+  mu <- rep(0, ncol)
+  rho <- 0.25
+  sigma <- toeplitz(rho^(0:(ncol - 1))) #  Symmetric Toeplitz Matrix
+  X <- matrix(rnorm(nrow * ncol), nrow) %*% chol(sigma) # multiply matrices Choleski Decomposition. Description. Compute the Choleski factorization of a real symmetric positive-definite square matrix)
 
-## Rename true variables
-X_data <- as.data.frame(X)
-for(i in c(nonzero)){
-  X_data1 <- X_data %>% 
-    rename_with(.cols = i, ~paste("causal_",i,sep=""))
-  X_data<-X_data1
+  # Generate the response from a linear model
+  nonzero <- sample(ncol, n_causal_vars) # select the id of 'true' variables
+  beta <- amplitude * (1:ncol %in% nonzero) / sqrt(nrow) # vector of effect sizes to pick out true varaiables
+  beta_value <- amplitude / sqrt(nrow)
+  outcome.sample <- function(X) X %*% beta + rnorm(nrow) # calculate outcome from true vars and error
+  outcome <- outcome.sample(X)
+
+  ## Rename true variables
+  X_data <- as.data.frame(X)
+  for (i in c(nonzero)) {
+    X_data1 <- X_data %>%
+      rename_with(.cols = i, ~ paste("causal_", i, sep = ""))
+    X_data <- X_data1
+  }
+
+  dataset_sim <- as.data.frame(cbind(outcome, X_data1))
 }
-
-dataset_sim <- as.data.frame(cbind(outcome, X_data1))
-}
-
 ```
 
 Plot signal strengths
@@ -178,13 +178,13 @@ Plot signal strengths
 True "cheat" model
 
 ```{r}
-df <- generate_data_with_signal(nrow=300, ncol=300, n_causal_vars = 8, amplitude = 7)
-univariable_outcomes <- map_df(df, ~univariable_analysis(data=df, variable=.), .id="variable")
+df_signal <- generate_data_with_signal(nrow = 300, ncol = 300, n_causal_vars = 8, amplitude = 7)
+univariable_outcomes <- map_df(df_signal, ~ univariable_analysis(data = df_signal, variable = .), .id = "variable")
 univariable_outcomes_filtered <- univariable_outcomes %>%
   filter(p.value < 0.2)
 variables_for_stepwise <- univariable_outcomes_filtered %>%
   pull(variable)
-stepwise_model(data = df, variables = variables_for_stepwise)
+stepwise_model(data = df_signal, variables = variables_for_stepwise)
 ```
 
 ## Regularisation
@@ -199,7 +199,7 @@ model_lasso <- function(data) {
     select(-"outcome") %>%
     as.matrix()
 
-  fit_lasso <- cv.glmnet(x = x_temp, y = y_temp, alpha=1)
+  fit_lasso <- cv.glmnet(x = x_temp, y = y_temp, alpha = 1)
 
   coefs <- coef(fit_lasso, s = "lambda.min")
 
@@ -212,7 +212,7 @@ model_lasso <- function(data) {
     select(variable, estimate)
 }
 
-model_results$lasso <- model_lasso(df)
+model_results$lasso <- model_lasso(df_signal)
 ```
 
 MCP can also be used 
@@ -243,15 +243,13 @@ model_mcp <- function(data) {
     mutate(variable = str_remove_all(variable, "`"))
 }
 
-model_results$mcp <- model_mcp(df)
+model_results$mcp <- model_mcp(df_signal)
 ```
-
 
 MBIC can also be used
 
 ```{r}
 model_mbic <- function(data) {
-  
   y_temp <- data %>%
     select("outcome") %>%
     as.matrix()
@@ -276,22 +274,25 @@ model_mbic <- function(data) {
     ) %>%
     rename(estimate = Estimate) %>%
     select(variable, estimate)
-  
 }
 
-model_results$mbic <- model_mbic(df)
+model_results$mbic <- model_mbic(df_signal)
 ```
 
 A comparison of the number of True/False positives is shown below:
 
 ```{r}
-calculate_tp_fp <- function(results){
+calculate_tp_fp <- function(results) {
   results %>%
-    mutate(causal = case_when(grepl("causal", variable) ~ "tp",
-                            !grepl("causal", variable) ~ "fp")) %>%
+    mutate(causal = case_when(
+      grepl("causal", variable) ~ "tp",
+      !grepl("causal", variable) ~ "fp"
+    )) %>%
     group_by(model) %>%
-    summarise(tp = sum(causal == "tp", na.rm=TRUE),
-              fp = sum(causal == "fp", na.rm=TRUE)) %>%
+    summarise(
+      tp = sum(causal == "tp", na.rm = TRUE),
+      fp = sum(causal == "fp", na.rm = TRUE)
+    ) %>%
     mutate("total_selected" = tp + fp)
 }
 
@@ -309,7 +310,7 @@ boot_sample <- function(data, boot_reps) {
   rsample::bootstraps(data, boot_reps)
 }
 
-bootstrapped_datasets <- boot_sample(data = df, boot_reps = 10)
+bootstrapped_datasets <- boot_sample(data = df_signal, boot_reps = 10)
 ```
 
 Bootstrapped data is presented here as a table of 10 different nested tables. 
@@ -332,7 +333,7 @@ We can apply our previous lasso function over each one of these bootstrapped res
 
 ```{r}
 model_lasso_bootstrapped <- bootstrapped_datasets %>%
-    map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% model_lasso(.), .id = "bootstrap")
+  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% model_lasso(.), .id = "bootstrap")
 ```
 
 ## Permutation
@@ -342,13 +343,13 @@ To identify a null threshold, first we must permute the outcome.
 Our original dataset looks like this: 
 
 ```{r}
-df
+df_signal
 ```
 
 By permuting the outcome variable we sever all ties between the outcome and the explanatory variables. We might want to conduct this 5 times. 
 
 ```{r}
-permuted_datasets <- rsample::permutations(data = df, permute = outcome, times = 5)
+permuted_datasets <- rsample::permutations(data = df_signal, permute = outcome, times = 5)
 ```
 
 A single dataset would look like this. Note the structure of the explanatory variables remains the same, but the outcome is randomly shuffled. 
@@ -358,60 +359,53 @@ permuted_datasets$splits[[1]] %>%
   as_tibble()
 ```
 
-We can then apply our bootstrap function to each one of these 5 permuted datasets. We might perform 10 bootstrap samples for each of the 5 permuted datasets. 
+We can then apply our bootstrap function to each one of these 5 permuted datasets. We might perform 10 bootstrap samples for each of the 5 permuted datasets. The model would then be applied to each dataset within the following table. 
 
 ```{r}
 permuted_bootstrapped_datasets <- permuted_datasets %>%
-    map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% boot_sample(., boot_reps = 10), .id = "permutation")
+  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% boot_sample(., boot_reps = 10), .id = "permutation")
+
+permuted_bootstrapped_datasets
 ```
 
-```{r}
-perm_model <- function(perm_data, data) {
-  perm_data %>%
-    mutate(perm_coefs = map(.x = .$splits, .f = ~ as.data.frame(.) %>%
-      model_lasso(.), .id = "bootstrap")) %>%
-    select(-splits) %>%
-    unnest(perm_coefs) %>%
-    select(-id) %>%
-    group_by(permutation) %>%
-    nest() %>%
-    rename(perm_data = data) %>%
-    map_df(.x = .$perm_data, .f = ~ as.data.frame(.) %>%
-      boot_summarise(booted_obj = ., data = data, boot_reps = 10), .id = "permutation")
-}
+This code is relatively lengthy, and is therefore deliberately omitted from the workshop, however is present within the stabiliser package and freely available. 
 
-permed_models <- perm_model(perm_data = permuted_bootstrapped_datasets, 
-                            data = df)
-```
+Using the ecdf() function, the stability of each variable within each permutation can be calculated. 
 
+By choosing the value where quantile(., probs=1), the highest stability that might have occurred by chance can be calculated. 
 
+The mean threshold across all permutations can then be calculated. This represents the "null threshold"; i.e., the mean highest stability a variable might acheive across all permuted datasets (where we know there should be no links between variables and outcome). 
 
-Draw the line
+Variables in the true model (i.e., non-permuted data) that have a stability value in excess of this null threshold are highly likely to be truly correlated with the outcome. 
 
 ## stabiliser approach
 
 ```{r}
-stab_output <- stabilise(outcome = "outcome", data = df, models = c("mbic"), type = "linear")
+stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic"), type = "linear")
 
 stab_output$mbic$stability
 ```
 
-All models 
+## All models 
+
+The stabiliser package allows multiple models to be run simultaneously. Just select the models you wish to run in the "models" argument. 
+
+MCP is omitted here for speed. To include it, just add it to the list of models using: models = c("mbic", "lasso", "mcp")
 
 ```{r}
-stab_output <- stabilise(outcome = "outcome", data = df, models = c("mbic", "lasso", "mcp"), type = "linear")
+stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic", "lasso"), type = "linear")
 ```
 
-# Plot differences between stab and non-stab
+## Results
 
-Calculate the number of true and false positives selected through stability approaches 
+Calculate the number of true and false positives selected through stability approaches, and rename columns to include "_stability". 
 
 ```{r}
 stability_results <- stab_output %>%
   map_df(., ~ .x$stability, .id = "model") %>%
   filter(stable == "*") %>%
   calculate_tp_fp(.) %>%
-  rename_all(., ~paste0(., "_stability"))
+  rename_all(., ~ paste0(., "_stability"))
 
 stability_results
 ```
@@ -420,14 +414,46 @@ Compare this with the non-stability approach
 
 ```{r}
 conventional_results %>%
-  left_join(stability_results, by=c("model" = "model_stability"))
+  left_join(stability_results, by = c("model" = "model_stability"))
 ```
 
 # Triangulation
 
+The stabiliser package allows the stability selection results from multiple models to be used synergistically, and by leveraging the strenghts of various models, a more robust method of variable selection is often acheived. 
+
 ```{r}
-triangulate(stab_output)
+triangulated_stability <- triangulate(stab_output)
+
+triangulated_stability
 ```
 
+```{r}
+stab_plot(triangulated_stability)
+```
 
+## No signal datasets
 
+We can now return to our original dataset that we simulated to have no signal. 
+
+Our conventional approach performed relatively poorly, selecting the following variables as being significantly associated with the outcome variable. 
+
+```{r}
+prefiltration_results
+```
+
+Using stabiliser, the following variables are selected from the dataset.
+
+```{r}
+stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic", "lasso"), type = "linear")
+
+triangulated_output_no_signal <- triangulate(stab_output_no_signal)
+
+triangulated_output_no_signal$combi$stability %>%
+  filter(stable == "*")
+```
+
+## Conclusions
+
+Thank you for attending this workshop. We hope you enjoyed the session, and have a good understanding of where some conventional modelling approaches might not be appropriate in wider datasets. 
+
+If you have any further questions after the workshop, please feel free to contact Martin Green (martin.green@nottingham.ac.uk) or Robert Hyde (robert.hyde4@nottingham.ac.uk).
