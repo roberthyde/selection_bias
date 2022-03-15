@@ -1,16 +1,9 @@
 ---
-output: github_document
+output: 
+  github_document
 ---
 <!-- badges: start -->
 <!-- badges: end -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  out.width = "100%"
-)
-```
 
 ```{r  global_options, echo=FALSE}
 knitr::opts_chunk$set(
@@ -18,6 +11,8 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 ```
+
+# Inferential modelling with wide data
 
 ## Introduction
 
@@ -59,7 +54,8 @@ variables <- generate_uncor_variables(ncols = 130, nrows = 197)
 This results in the following dataset being generated:
 
 ```{r}
-variables
+variables %>%
+  as_tibble()
 ```
 
 We can also generate an outcome variable, in this case randomly generated in the same manner, but renaming as "outcome"
@@ -72,7 +68,8 @@ generate_uncor_outcome <- function(nrows) {
 
 outcome <- generate_uncor_outcome(nrows = 197)
 
-outcome
+outcome %>%
+  as_tibble()
 ```
 
 We can now bind together the uncorrelated, randomly generated variables, with the randomly generated outcome. 
@@ -85,7 +82,8 @@ df_no_signal <- outcome %>%
 This results in a dataset of 197 rows, with a single outcome variable, which has no relationship to the 130 columns as shown below. 
 
 ```{r}
-df_no_signal
+df_no_signal %>%
+  as_tibble()
 ```
 
 ## Conventional approaches
@@ -117,7 +115,8 @@ univariable_outcomes_filtered <- univariable_outcomes %>%
 This results in a table below of all of the variables that have a p-value of <0.2 to be carried forward into a multivariable model. 
 
 ```{r}
-univariable_outcomes_filtered
+univariable_outcomes_filtered %>%
+  as_tibble()
 ```
 
 A list of variables to be included is as follows: 
@@ -143,7 +142,8 @@ stepwise_model <- function(data, variables) {
 
 prefiltration_results <- stepwise_model(data = df_no_signal, variables = variables_for_stepwise)
 
-prefiltration_results
+prefiltration_results %>%
+  as_tibble()
 ```
 
 ## Data with a true signal 
@@ -170,32 +170,54 @@ generate_data_with_signal <- function(nrow, ncol, n_causal_vars, amplitude) {
   outcome <- outcome.sample(X)
 
   ## Rename true variables
-  X_data <- as_data_frame(X)
+  X_data <- as.data.frame(X)
   for (i in c(nonzero)) {
     X_data1 <- X_data %>%
       rename_with(.cols = i, ~ paste("causal_", i, sep = ""))
     X_data <- X_data1
   }
 
-  dataset_sim <- as_data_frame(cbind(outcome, X_data1))
+  dataset_sim <- as.data.frame(cbind(outcome, X_data1))
 }
 ```
 
-Plot signal strengths
+We can now simulate a dataset df_signal with 300 rows and 300 variables, 8 of which have a relationship with the outcome. 
 
-True "cheat" model
+We can also alter the signal strenght of causal variables by changing the "amplitute" paramater. 
 
 ```{r}
 df_signal <- generate_data_with_signal(nrow = 300, ncol = 300, n_causal_vars = 8, amplitude = 7)
+```
+
+## "Cheat" model
+
+As we have simulated this dataset, we can "cheat" and create the perfect model to check everything's worked correctly. 
+
+```{r}
+df_signal %>%
+  select(outcome, contains("causal_")) %>%
+  lm(outcome~., data=.) %>%
+  tidy()
+```
+
+## Conventional stepwise approach 
+
+We can now repeat out prefiltration and stepwise selection approach as before 
+
+```{r}
 univariable_outcomes <- map_df(df_signal, ~ univariable_analysis(data = df_signal, variable = .), .id = "variable")
 univariable_outcomes_filtered <- univariable_outcomes %>%
   filter(p.value < 0.2)
 variables_for_stepwise <- univariable_outcomes_filtered %>%
   pull(variable)
-stepwise_model(data = df_signal, variables = variables_for_stepwise)
+model_results$prefiltration <- stepwise_model(data = df_signal, variables = variables_for_stepwise)
+model_results$prefiltration %>%
+  as_tibble()
 ```
 
 ## Regularisation
+
+There are several regularisation methods available. Here, we will use the lasso. The following function enables the use of the lasso algorithm from the *glmnet* package. 
 
 ```{r}
 model_lasso <- function(data) {
@@ -211,7 +233,7 @@ model_lasso <- function(data) {
 
   coefs <- coef(fit_lasso, s = "lambda.min")
 
-  data_frame(name = coefs@Dimnames[[1]][coefs@i + 1], coefficient = coefs@x) %>%
+  data.frame(name = coefs@Dimnames[[1]][coefs@i + 1], coefficient = coefs@x) %>%
     rename(
       variable = name,
       estimate = coefficient
@@ -223,7 +245,7 @@ model_lasso <- function(data) {
 model_results$lasso <- model_lasso(df_signal)
 ```
 
-MCP can also be used 
+MCP can also be used in a similar manner using the *ncvreg* package. 
 
 ```{r}
 model_mcp <- function(data) {
@@ -254,7 +276,7 @@ model_mcp <- function(data) {
 model_results$mcp <- model_mcp(df_signal)
 ```
 
-MBIC can also be used
+MBIC can also be used from the *bigstep* package
 
 ```{r}
 model_mbic <- function(data) {
@@ -273,7 +295,7 @@ model_mbic <- function(data) {
     multi_backward(crit = mbic) %>%
     summary() %>%
     stats::coef() %>%
-    as_data_frame() %>%
+    as.data.frame() %>%
     rownames_to_column(., var = "variable") %>%
     mutate(variable = str_remove_all(variable, "`")) %>%
     filter(
@@ -307,6 +329,8 @@ calculate_tp_fp <- function(results) {
 conventional_results <- model_results %>%
   bind_rows(., .id = "model") %>%
   calculate_tp_fp()
+
+conventional_results
 ```
 
 ## Stability selection
@@ -335,13 +359,13 @@ bootstrapped_datasets$splits[[1]] %>%
   arrange(outcome)
 ```
 
-## Model for bootstraps (lasso)
+## Model for bootstraps
 
 We can apply our previous lasso function over each one of these bootstrapped resamples. 
 
 ```{r}
 model_lasso_bootstrapped <- bootstrapped_datasets %>%
-  map_df(.x = .$splits, .f = ~ as_data_frame(.) %>% model_lasso(.), .id = "bootstrap")
+  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% model_lasso(.), .id = "bootstrap")
 ```
 
 ## Permutation
@@ -371,12 +395,12 @@ We can then apply our bootstrap function to each one of these 5 permuted dataset
 
 ```{r}
 permuted_bootstrapped_datasets <- permuted_datasets %>%
-  map_df(.x = .$splits, .f = ~ as_data_frame(.) %>% boot_sample(., boot_reps = 10), .id = "permutation")
+  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% boot_sample(., boot_reps = 10), .id = "permutation")
 
 permuted_bootstrapped_datasets
 ```
 
-This code is relatively lengthy, and is therefore deliberately omitted from the workshop, however is present within the stabiliser package and freely available. 
+This code is relatively lengthy, and is therefore deliberately omitted from the workshop, however is present within the *stabiliser* package and freely available at www.github.com/roberthyde/stabiliser. 
 
 Using the ecdf() function, the stability of each variable within each permutation can be calculated. 
 
@@ -386,7 +410,7 @@ The mean threshold across all permutations can then be calculated. This represen
 
 Variables in the true model (i.e., non-permuted data) that have a stability value in excess of this null threshold are highly likely to be truly correlated with the outcome. 
 
-## stabiliser approach
+## The *stabiliser* approach
 
 ```{r}
 stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic"), type = "linear")
@@ -396,12 +420,13 @@ stab_output$mbic$stability
 
 ## All models 
 
-The stabiliser package allows multiple models to be run simultaneously. Just select the models you wish to run in the "models" argument. 
+The *stabiliser* package allows multiple models to be run simultaneously. Just select the models you wish to run in the "models" argument. 
 
 MCP is omitted here for speed. To include it, just add it to the list of models using: models = c("mbic", "lasso", "mcp")
 
 ```{r}
-stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic", "lasso"), type = "linear")
+#stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic", "lasso"), type = "linear")
+stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic"), type = "linear")
 ```
 
 ## Results
@@ -427,7 +452,7 @@ conventional_results %>%
 
 # Triangulation
 
-The stabiliser package allows the stability selection results from multiple models to be used synergistically, and by leveraging the strenghts of various models, a more robust method of variable selection is often acheived. 
+The *stabiliser* package allows the stability selection results from multiple models to be used synergistically, and by leveraging the strenghts of various models, a more robust method of variable selection is often achieved. 
 
 ```{r}
 triangulated_stability <- triangulate(stab_output)
@@ -449,11 +474,11 @@ Our conventional approach performed relatively poorly, selecting the following v
 prefiltration_results
 ```
 
-Using stabiliser, the following variables are selected from the dataset.
+Using *stabiliser*, the following variables are selected from the dataset.
 
 ```{r}
-stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic", "lasso"), type = "linear")
-
+# stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic", "lasso"), type = "linear")
+stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic"), type = "linear")
 triangulated_output_no_signal <- triangulate(stab_output_no_signal)
 
 triangulated_output_no_signal$combi$stability %>%
