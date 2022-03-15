@@ -41,7 +41,7 @@ The following function generates a dataset with "ncols" as the number of variabl
 
 ```{r}
 generate_uncor_variables <- function(ncols, nrows) {
-  data_frame(replicate(ncols, rnorm(nrows, 0, 1)))
+  data.frame(replicate(ncols, rnorm(nrows, 0, 1)))
 }
 ```
 
@@ -62,7 +62,7 @@ We can also generate an outcome variable, in this case randomly generated in the
 
 ```{r}
 generate_uncor_outcome <- function(nrows) {
-  data_frame(replicate(1, rnorm(nrows, 0, 1))) %>%
+  data.frame(replicate(1, rnorm(nrows, 0, 1))) %>%
     rename("outcome" = 1)
 }
 
@@ -375,7 +375,8 @@ To identify a null threshold, first we must permute the outcome.
 Our original dataset looks like this: 
 
 ```{r}
-df_signal
+df_signal %>%
+  as_tibble()
 ```
 
 By permuting the outcome variable we sever all ties between the outcome and the explanatory variables. We might want to conduct this 5 times. 
