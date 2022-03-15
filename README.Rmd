@@ -1,0 +1,63 @@
+---
+output: github_document
+---
+<!-- badges: start -->
+<!-- badges: end -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  out.width = "100%"
+)
+```
+
+```{r  global_options, echo=FALSE}
+knitr::opts_chunk$set(
+  error = FALSE, message = FALSE,
+  warning = FALSE
+)
+```
+
+## Introduction
+
+Welcome to our workshop on inferential modelling with wide data. We hope you enjoy the session.
+
+This workshop will cover the problems associated with inferential modelling of high dimensional, wide data, suggest approaches to overcome them and provide hands-on training in the implementation of regularisation techniques, covariate selection stability and triangulation.
+
+The following packages are required for these exercises. 
+
+```{r}
+library(Hmisc)
+library(broom)
+library(glmnet)
+library(ncvreg)
+library(bigstep)
+library(rsample)
+library(tidyverse)
+library(stabiliser)
+```
+
+## Simulating data
+
+In order to appreciate the issues we will be discussing today, we have provided functions to simulate datasets for exploration. 
+
+The following function generates a dataset with "ncols" as the number of variables and "nrows" as the number of rows. 
+
+```{r}
+generate_uncor_variables <- function(ncols, nrows) {
+  data.frame(replicate(ncols, rnorm(nrows, 0, 1)))
+}
+```
+
+A dataset with 197 rows and 130 variables can then be generated using this function as follows: 
+
+```{r}
+variables <- generate_uncor_variables(ncols = 130, nrows = 197)
+```
+
+This results in the following dataset being generated:
+
+```{r}
+variables
+```
