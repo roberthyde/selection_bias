@@ -19,6 +19,7 @@ library(broom)
 library(glmnet)
 library(ncvreg)
 library(bigstep)
+library(rsample)
 library(tidyverse)
 library(stabiliser)
 ```
@@ -284,25 +285,106 @@ model_results$mbic <- model_mbic(df)
 A comparison of the number of True/False positives is shown below:
 
 ```{r}
-model_results %>%
+calculate_tp_fp <- function(results){
+  results %>%
+    mutate(causal = case_when(grepl("causal", variable) ~ "tp",
+                            !grepl("causal", variable) ~ "fp")) %>%
+    group_by(model) %>%
+    summarise(tp = sum(causal == "tp", na.rm=TRUE),
+              fp = sum(causal == "fp", na.rm=TRUE)) %>%
+    mutate("total_selected" = tp + fp)
+}
+
+conventional_results <- model_results %>%
   bind_rows(., .id = "model") %>%
-  mutate(causal = case_when(grepl("causal", variable) ~ "TP",
-                            !grepl("causal", variable) ~ "FP")) %>%
-  group_by(model, causal) %>%
-  count() %>%
-  spread(causal, n) %>%
-  mutate(TP = replace_na(TP, 0),
-         FP = replace_na(FP, 0),
-         "Total selected" = TP + FP)
+  calculate_tp_fp()
 ```
 
 ## Stability selection
 
 Function for bootstrapping
 
-Model for bootstraps (lasso)
+```{r}
+boot_sample <- function(data, boot_reps) {
+  rsample::bootstraps(data, boot_reps)
+}
 
-Permutation approach
+bootstrapped_datasets <- boot_sample(data = df, boot_reps = 10)
+```
+
+Bootstrapped data is presented here as a table of 10 different nested tables. 
+
+```{r}
+bootstrapped_datasets
+```
+
+If we extract a single bootstrapped dataset and sort by the outcome, we can see that several rows have been resampled. Consequently as the dataset length is the same as the original, several rows will be omitted completely. 
+
+```{r}
+bootstrapped_datasets$splits[[1]] %>%
+  as_tibble() %>%
+  arrange(outcome)
+```
+
+## Model for bootstraps (lasso)
+
+We can apply our previous lasso function over each one of these bootstrapped resamples. 
+
+```{r}
+model_lasso_bootstrapped <- bootstrapped_datasets %>%
+    map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% model_lasso(.), .id = "bootstrap")
+```
+
+## Permutation
+
+To identify a null threshold, first we must permute the outcome. 
+
+Our original dataset looks like this: 
+
+```{r}
+df
+```
+
+By permuting the outcome variable we sever all ties between the outcome and the explanatory variables. We might want to conduct this 5 times. 
+
+```{r}
+permuted_datasets <- rsample::permutations(data = df, permute = outcome, times = 5)
+```
+
+A single dataset would look like this. Note the structure of the explanatory variables remains the same, but the outcome is randomly shuffled. 
+
+```{r}
+permuted_datasets$splits[[1]] %>%
+  as_tibble()
+```
+
+We can then apply our bootstrap function to each one of these 5 permuted datasets. We might perform 10 bootstrap samples for each of the 5 permuted datasets. 
+
+```{r}
+permuted_bootstrapped_datasets <- permuted_datasets %>%
+    map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% boot_sample(., boot_reps = 10), .id = "permutation")
+```
+
+```{r}
+perm_model <- function(perm_data, data) {
+  perm_data %>%
+    mutate(perm_coefs = map(.x = .$splits, .f = ~ as.data.frame(.) %>%
+      model_lasso(.), .id = "bootstrap")) %>%
+    select(-splits) %>%
+    unnest(perm_coefs) %>%
+    select(-id) %>%
+    group_by(permutation) %>%
+    nest() %>%
+    rename(perm_data = data) %>%
+    map_df(.x = .$perm_data, .f = ~ as.data.frame(.) %>%
+      boot_summarise(booted_obj = ., data = data, boot_reps = 10), .id = "permutation")
+}
+
+permed_models <- perm_model(perm_data = permuted_bootstrapped_datasets, 
+                            data = df)
+```
+
+
 
 Draw the line
 
@@ -317,19 +399,33 @@ stab_output$mbic$stability
 All models 
 
 ```{r}
-
+stab_output <- stabilise(outcome = "outcome", data = df, models = c("mbic", "lasso", "mcp"), type = "linear")
 ```
 
 # Plot differences between stab and non-stab
 
+Calculate the number of true and false positives selected through stability approaches 
+
+```{r}
+stability_results <- stab_output %>%
+  map_df(., ~ .x$stability, .id = "model") %>%
+  filter(stable == "*") %>%
+  calculate_tp_fp(.) %>%
+  rename_all(., ~paste0(., "_stability"))
+
+stability_results
+```
+
+Compare this with the non-stability approach
+
+```{r}
+conventional_results %>%
+  left_join(stability_results, by=c("model" = "model_stability"))
+```
+
 # Triangulation
 
 ```{r}
-stab_output <- stabilise(outcome = "outcome", data = df, models = c("lasso", "enet"), type = "linear")
-
-stab_output$lasso$stability
-stab_output$enet$stability
-
 triangulate(stab_output)
 ```
 
