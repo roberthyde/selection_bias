@@ -57,18 +57,18 @@ variables %>%
 ```
 
     ## # A tibble: 197 x 130
-    ##        X1      X2     X3      X4      X5     X6      X7     X8      X9    X10
-    ##     <dbl>   <dbl>  <dbl>   <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>  <dbl>
-    ##  1 -1.82  -1.14    0.849  0.497   1.15    1.37   1.39    1.48   0.737  -0.705
-    ##  2  0.372  0.112   0.319  1.51    1.03    0.717 -0.691  -1.61  -1.10    0.620
-    ##  3 -1.08  -0.338  -0.199 -0.669  -0.0606  0.887 -0.0592 -0.390  0.574   0.935
-    ##  4 -0.634  0.736  -1.21   0.303   1.24    1.86   0.379  -0.665 -0.469  -3.03 
-    ##  5 -2.50  -0.687   0.919 -0.638   0.0265 -2.27  -0.964   0.261  2.19   -2.14 
-    ##  6 -0.490  0.399  -1.25   0.247  -0.222   0.923  0.982  -0.739 -1.06    0.217
-    ##  7  0.468 -0.0978  0.548  0.307  -0.172   0.793  1.27   -0.729  0.594  -0.293
-    ##  8  1.07  -0.559   0.796 -0.254  -0.155  -0.626 -0.219  -2.18   0.460   2.29 
-    ##  9 -0.332  0.558   0.464  0.426  -0.573   1.89   1.71   -0.680  0.822   0.639
-    ## 10  0.256 -0.955   0.952 -0.0737  1.34    0.180 -1.00    0.822  0.0926  0.622
+    ##         X1     X2      X3     X4      X5     X6      X7     X8      X9     X10
+    ##      <dbl>  <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>   <dbl>
+    ##  1 -2.58    1.05  -0.332  -0.644 -0.691  -0.635  0.468   0.555  1.63    0.900 
+    ##  2 -0.802   0.463  0.0574  1.09  -0.612   1.11   1.18   -1.84  -0.0314  0.356 
+    ##  3 -0.385  -0.879 -1.88   -0.404 -0.123   0.455  0.356  -0.869  1.86    0.782 
+    ##  4 -0.770  -0.466 -1.05    2.32   0.384   0.634  1.82   -1.89   0.810  -1.42  
+    ##  5  0.436   0.124 -0.559  -0.112  1.41   -1.64   0.275   1.14  -2.02   -1.31  
+    ##  6  0.285  -1.21   0.224   0.541  0.212   2.00  -0.0174  0.292  0.492   1.11  
+    ##  7  0.124   0.376 -0.877   1.34   0.814  -1.78  -2.39    0.158 -0.441   0.679 
+    ##  8 -1.86   -0.853 -0.288   1.89   0.0454 -0.211 -0.496   0.712  1.26    0.753 
+    ##  9  1.03   -0.896  0.339   0.976  0.134   0.655  0.917  -1.07   0.352   0.0244
+    ## 10 -0.0552 -0.458 -1.60   -1.47  -1.63   -0.266  1.29    1.30   0.209   0.0627
     ## # ... with 187 more rows, and 120 more variables: X11 <dbl>, X12 <dbl>,
     ## #   X13 <dbl>, X14 <dbl>, X15 <dbl>, X16 <dbl>, X17 <dbl>, X18 <dbl>,
     ## #   X19 <dbl>, X20 <dbl>, X21 <dbl>, X22 <dbl>, X23 <dbl>, X24 <dbl>,
@@ -95,16 +95,16 @@ outcome %>%
     ## # A tibble: 197 x 1
     ##    outcome
     ##      <dbl>
-    ##  1  1.47  
-    ##  2  1.70  
-    ##  3 -0.955 
-    ##  4 -0.775 
-    ##  5  0.492 
-    ##  6 -0.0189
-    ##  7 -0.419 
-    ##  8 -2.22  
-    ##  9 -1.51  
-    ## 10 -0.176 
+    ##  1  0.626 
+    ##  2  1.29  
+    ##  3  0.640 
+    ##  4  0.0644
+    ##  5 -0.862 
+    ##  6 -0.454 
+    ##  7 -0.871 
+    ##  8  0.625 
+    ##  9  0.437 
+    ## 10 -2.37  
     ## # ... with 187 more rows
 
 We can now bind together the uncorrelated, randomly generated variables,
@@ -124,18 +124,18 @@ df_no_signal %>%
 ```
 
     ## # A tibble: 197 x 131
-    ##    outcome     X1      X2     X3      X4      X5     X6      X7     X8      X9
-    ##      <dbl>  <dbl>   <dbl>  <dbl>   <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>
-    ##  1  1.47   -1.82  -1.14    0.849  0.497   1.15    1.37   1.39    1.48   0.737 
-    ##  2  1.70    0.372  0.112   0.319  1.51    1.03    0.717 -0.691  -1.61  -1.10  
-    ##  3 -0.955  -1.08  -0.338  -0.199 -0.669  -0.0606  0.887 -0.0592 -0.390  0.574 
-    ##  4 -0.775  -0.634  0.736  -1.21   0.303   1.24    1.86   0.379  -0.665 -0.469 
-    ##  5  0.492  -2.50  -0.687   0.919 -0.638   0.0265 -2.27  -0.964   0.261  2.19  
-    ##  6 -0.0189 -0.490  0.399  -1.25   0.247  -0.222   0.923  0.982  -0.739 -1.06  
-    ##  7 -0.419   0.468 -0.0978  0.548  0.307  -0.172   0.793  1.27   -0.729  0.594 
-    ##  8 -2.22    1.07  -0.559   0.796 -0.254  -0.155  -0.626 -0.219  -2.18   0.460 
-    ##  9 -1.51   -0.332  0.558   0.464  0.426  -0.573   1.89   1.71   -0.680  0.822 
-    ## 10 -0.176   0.256 -0.955   0.952 -0.0737  1.34    0.180 -1.00    0.822  0.0926
+    ##    outcome      X1     X2      X3     X4      X5     X6      X7     X8      X9
+    ##      <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>
+    ##  1  0.626  -2.58    1.05  -0.332  -0.644 -0.691  -0.635  0.468   0.555  1.63  
+    ##  2  1.29   -0.802   0.463  0.0574  1.09  -0.612   1.11   1.18   -1.84  -0.0314
+    ##  3  0.640  -0.385  -0.879 -1.88   -0.404 -0.123   0.455  0.356  -0.869  1.86  
+    ##  4  0.0644 -0.770  -0.466 -1.05    2.32   0.384   0.634  1.82   -1.89   0.810 
+    ##  5 -0.862   0.436   0.124 -0.559  -0.112  1.41   -1.64   0.275   1.14  -2.02  
+    ##  6 -0.454   0.285  -1.21   0.224   0.541  0.212   2.00  -0.0174  0.292  0.492 
+    ##  7 -0.871   0.124   0.376 -0.877   1.34   0.814  -1.78  -2.39    0.158 -0.441 
+    ##  8  0.625  -1.86   -0.853 -0.288   1.89   0.0454 -0.211 -0.496   0.712  1.26  
+    ##  9  0.437   1.03   -0.896  0.339   0.976  0.134   0.655  0.917  -1.07   0.352 
+    ## 10 -2.37   -0.0552 -0.458 -1.60   -1.47  -1.63   -0.266  1.29    1.30   0.209 
     ## # ... with 187 more rows, and 121 more variables: X10 <dbl>, X11 <dbl>,
     ## #   X12 <dbl>, X13 <dbl>, X14 <dbl>, X15 <dbl>, X16 <dbl>, X17 <dbl>,
     ## #   X18 <dbl>, X19 <dbl>, X20 <dbl>, X21 <dbl>, X22 <dbl>, X23 <dbl>,
@@ -186,20 +186,20 @@ univariable_outcomes_filtered %>%
   as_tibble()
 ```
 
-    ## # A tibble: 28 x 6
+    ## # A tibble: 25 x 6
     ##    variable term     estimate std.error statistic p.value
     ##    <chr>    <chr>       <dbl>     <dbl>     <dbl>   <dbl>
-    ##  1 outcome  variable   1       2.45e-17   4.09e16  0     
-    ##  2 X3       variable  -0.153   7.23e- 2  -2.12e 0  0.0353
-    ##  3 X11      variable  -0.113   7.14e- 2  -1.58e 0  0.115 
-    ##  4 X17      variable  -0.152   7.45e- 2  -2.04e 0  0.0424
-    ##  5 X21      variable  -0.147   6.57e- 2  -2.24e 0  0.0262
-    ##  6 X24      variable   0.127   8.65e- 2   1.47e 0  0.143 
-    ##  7 X27      variable   0.112   6.95e- 2   1.61e 0  0.110 
-    ##  8 X30      variable   0.152   7.55e- 2   2.01e 0  0.0459
-    ##  9 X32      variable   0.0981  7.25e- 2   1.35e 0  0.178 
-    ## 10 X41      variable  -0.119   6.85e- 2  -1.74e 0  0.0834
-    ## # ... with 18 more rows
+    ##  1 outcome  variable   1       1.14e-17   8.79e16  0     
+    ##  2 X6       variable   0.117   7.51e- 2   1.56e 0  0.120 
+    ##  3 X11      variable  -0.109   7.56e- 2  -1.44e 0  0.152 
+    ##  4 X16      variable   0.146   6.58e- 2   2.23e 0  0.0272
+    ##  5 X22      variable   0.139   6.97e- 2   2.00e 0  0.0473
+    ##  6 X23      variable   0.0999  6.55e- 2   1.52e 0  0.129 
+    ##  7 X24      variable   0.135   6.93e- 2   1.95e 0  0.0526
+    ##  8 X26      variable  -0.122   6.99e- 2  -1.74e 0  0.0837
+    ##  9 X34      variable   0.106   6.79e- 2   1.56e 0  0.120 
+    ## 10 X41      variable  -0.120   7.18e- 2  -1.68e 0  0.0953
+    ## # ... with 15 more rows
 
 A list of variables to be included is as follows:
 
@@ -229,18 +229,14 @@ prefiltration_results %>%
   as_tibble()
 ```
 
-    ## # A tibble: 9 x 5
+    ## # A tibble: 5 x 5
     ##   variable estimate std.error statistic p.value
     ##   <chr>       <dbl>     <dbl>     <dbl>   <dbl>
-    ## 1 X21        -0.146    0.0599     -2.44 0.0157 
-    ## 2 X30         0.169    0.0691      2.45 0.0153 
-    ## 3 X46         0.190    0.0631      3.01 0.00302
-    ## 4 X81         0.173    0.0628      2.76 0.00643
-    ## 5 X96         0.140    0.0684      2.05 0.0415 
-    ## 6 X98         0.182    0.0679      2.69 0.00787
-    ## 7 X100        0.179    0.0664      2.69 0.00781
-    ## 8 X103        0.163    0.0616      2.64 0.00905
-    ## 9 X116        0.140    0.0665      2.11 0.0363
+    ## 1 X24         0.133    0.0654      2.03  0.0439
+    ## 2 X41        -0.147    0.0678     -2.17  0.0311
+    ## 3 X76        -0.129    0.0641     -2.02  0.0449
+    ## 4 X106        0.177    0.0689      2.57  0.0110
+    ## 5 X120        0.149    0.0640      2.33  0.0207
 
 ## Data with a true signal
 
@@ -311,15 +307,15 @@ df_signal %>%
     ## # A tibble: 9 x 5
     ##   term        estimate std.error statistic  p.value
     ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>
-    ## 1 (Intercept)   0.0134    0.0577     0.233 8.16e- 1
-    ## 2 causal_24     0.358     0.0551     6.50  3.55e-10
-    ## 3 causal_41     0.343     0.0557     6.16  2.40e- 9
-    ## 4 causal_92     0.423     0.0589     7.19  5.59e-12
-    ## 5 causal_108    0.390     0.0567     6.87  3.91e-11
-    ## 6 causal_117    0.348     0.0563     6.17  2.22e- 9
-    ## 7 causal_179    0.445     0.0587     7.58  4.69e-13
-    ## 8 causal_258    0.489     0.0552     8.86  7.97e-17
-    ## 9 causal_261    0.404     0.0588     6.86  4.13e-11
+    ## 1 (Intercept)   0.0248    0.0602     0.411 6.81e- 1
+    ## 2 causal_21     0.468     0.0608     7.69  2.27e-13
+    ## 3 causal_31     0.418     0.0614     6.80  5.99e-11
+    ## 4 causal_117    0.357     0.0594     6.01  5.48e- 9
+    ## 5 causal_140    0.431     0.0631     6.83  4.90e-11
+    ## 6 causal_200    0.383     0.0589     6.51  3.20e-10
+    ## 7 causal_256    0.237     0.0600     3.95  9.76e- 5
+    ## 8 causal_278    0.433     0.0633     6.83  4.84e-11
+    ## 9 causal_286    0.492     0.0621     7.93  4.75e-14
 
 ## Conventional stepwise approach
 
@@ -337,25 +333,20 @@ model_results$prefiltration %>%
   as_tibble()
 ```
 
-    ## # A tibble: 16 x 5
-    ##    variable   estimate std.error statistic  p.value
-    ##    <chr>         <dbl>     <dbl>     <dbl>    <dbl>
-    ##  1 V3           -0.166    0.0535     -3.10 2.12e- 3
-    ##  2 causal_24     0.322    0.0513      6.27 1.40e- 9
-    ##  3 causal_41     0.313    0.0516      6.07 4.34e- 9
-    ##  4 causal_92     0.375    0.0557      6.74 9.24e-11
-    ##  5 causal_108    0.390    0.0522      7.46 1.14e-12
-    ##  6 causal_117    0.335    0.0517      6.48 4.16e-10
-    ##  7 V127         -0.180    0.0529     -3.40 7.78e- 4
-    ##  8 V148          0.114    0.0493      2.30 2.21e- 2
-    ##  9 V164         -0.127    0.0523     -2.43 1.57e- 2
-    ## 10 V175         -0.114    0.0530     -2.14 3.30e- 2
-    ## 11 causal_179    0.400    0.0566      7.05 1.42e-11
-    ## 12 causal_258    0.458    0.0517      8.87 9.93e-17
-    ## 13 V260          0.124    0.0556      2.24 2.60e- 2
-    ## 14 causal_261    0.319    0.0581      5.48 9.49e- 8
-    ## 15 V276          0.121    0.0490      2.46 1.45e- 2
-    ## 16 V299          0.162    0.0551      2.95 3.49e- 3
+    ## # A tibble: 22 x 5
+    ##    variable  estimate std.error statistic  p.value
+    ##    <chr>        <dbl>     <dbl>     <dbl>    <dbl>
+    ##  1 causal_21    0.433    0.0597      7.26 4.49e-12
+    ##  2 V23          0.136    0.0646      2.11 3.56e- 2
+    ##  3 V28         -0.166    0.0540     -3.07 2.35e- 3
+    ##  4 V29          0.120    0.0591      2.04 4.27e- 2
+    ##  5 causal_31    0.316    0.0582      5.42 1.34e- 7
+    ##  6 V52          0.172    0.0595      2.89 4.16e- 3
+    ##  7 V68         -0.120    0.0565     -2.12 3.52e- 2
+    ##  8 V91         -0.163    0.0521     -3.13 1.94e- 3
+    ##  9 V103        -0.121    0.0568     -2.13 3.40e- 2
+    ## 10 V105         0.135    0.0593      2.28 2.36e- 2
+    ## # ... with 12 more rows
 
 ## Regularisation
 
@@ -481,15 +472,16 @@ conventional_results
     ## # A tibble: 4 x 4
     ##   model            tp    fp total_selected
     ##   <chr>         <int> <int>          <int>
-    ## 1 lasso             8    25             33
-    ## 2 mbic              8     0              8
-    ## 3 mcp               8     9             17
-    ## 4 prefiltration     8     8             16
+    ## 1 lasso             8    10             18
+    ## 2 mbic              6     0              6
+    ## 3 mcp               8     2             10
+    ## 4 prefiltration     8    14             22
 
 ## Stability selection
 
 Stability selection relies heavily on bootstrapping. An example of the
-bootstrapping approach is shown below.
+bootstrapping approach is shown below (in reality 100-200 bootstrap
+resamples might be conducted).
 
 ``` r
 boot_sample <- function(data, boot_reps) {
@@ -510,16 +502,16 @@ bootstrapped_datasets
     ## # A tibble: 10 x 2
     ##    splits            id         
     ##    <list>            <chr>      
-    ##  1 <split [300/106]> Bootstrap01
-    ##  2 <split [300/112]> Bootstrap02
+    ##  1 <split [300/115]> Bootstrap01
+    ##  2 <split [300/120]> Bootstrap02
     ##  3 <split [300/115]> Bootstrap03
-    ##  4 <split [300/115]> Bootstrap04
-    ##  5 <split [300/111]> Bootstrap05
-    ##  6 <split [300/107]> Bootstrap06
-    ##  7 <split [300/115]> Bootstrap07
-    ##  8 <split [300/112]> Bootstrap08
-    ##  9 <split [300/112]> Bootstrap09
-    ## 10 <split [300/109]> Bootstrap10
+    ##  4 <split [300/120]> Bootstrap04
+    ##  5 <split [300/99]>  Bootstrap05
+    ##  6 <split [300/111]> Bootstrap06
+    ##  7 <split [300/105]> Bootstrap07
+    ##  8 <split [300/104]> Bootstrap08
+    ##  9 <split [300/107]> Bootstrap09
+    ## 10 <split [300/107]> Bootstrap10
 
 If we extract a single bootstrapped dataset and sort by the outcome, we
 can see that several rows have been resampled. Consequently as the
@@ -533,24 +525,24 @@ bootstrapped_datasets$splits[[1]] %>%
 ```
 
     ## # A tibble: 300 x 301
-    ##    outcome     V1     V2     V3     V4     V5     V6     V7      V8     V9
-    ##      <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>   <dbl>  <dbl>
-    ##  1   -3.78  0.916  0.573  1.76   0.246 -1.14  -2.03  -1.88  -0.0222  1.41 
-    ##  2   -3.76  0.164  1.64  -0.104 -0.628  1.23   2.53  -0.105  0.576  -0.561
-    ##  3   -3.76  0.164  1.64  -0.104 -0.628  1.23   2.53  -0.105  0.576  -0.561
-    ##  4   -3.28  0.888 -0.128  1.46   0.218  1.67   1.84   1.10   1.32    0.911
-    ##  5   -3.23  0.234 -0.375  0.969 -0.196  1.08   2.30   1.46   0.364   0.903
-    ##  6   -2.87  0.548 -0.299  1.05   0.101 -1.09  -1.91   0.301  1.27    0.972
-    ##  7   -2.87  0.548 -0.299  1.05   0.101 -1.09  -1.91   0.301  1.27    0.972
-    ##  8   -2.84  0.862  0.910 -0.649  2.14  -0.799  0.508  0.370 -0.831   0.399
-    ##  9   -2.82 -0.231 -0.657  1.23  -1.71   0.381  1.19   0.646  0.0458  0.781
-    ## 10   -2.82 -0.231 -0.657  1.23  -1.71   0.381  1.19   0.646  0.0458  0.781
+    ##    outcome      V1     V2       V3     V4      V5     V6     V7      V8      V9
+    ##      <dbl>   <dbl>  <dbl>    <dbl>  <dbl>   <dbl>  <dbl>  <dbl>   <dbl>   <dbl>
+    ##  1   -4.37  0.860  -0.877  0.105    0.380 -0.639  -1.01   1.16   0.439  -0.382 
+    ##  2   -3.92 -0.908  -1.33   0.604    2.19   1.98   -2.14  -0.470  0.118  -0.0788
+    ##  3   -3.75 -0.937  -1.07   0.00104 -0.131  0.0219 -0.233  1.40   1.43    0.250 
+    ##  4   -3.75 -0.937  -1.07   0.00104 -0.131  0.0219 -0.233  1.40   1.43    0.250 
+    ##  5   -3.65  0.395  -1.31  -0.709   -0.134  0.578   1.50   1.95   0.247   0.964 
+    ##  6   -3.00 -0.566  -0.732 -0.795   -0.565  0.424  -0.777 -0.725 -0.455  -0.989 
+    ##  7   -2.97  0.0285  0.824  0.121    0.855 -0.961   2.52  -0.735  0.0419 -1.05  
+    ##  8   -2.88 -0.872  -0.823 -2.38     0.957  0.978  -0.884 -1.21   1.02   -1.40  
+    ##  9   -2.88 -0.872  -0.823 -2.38     0.957  0.978  -0.884 -1.21   1.02   -1.40  
+    ## 10   -2.60 -1.08    0.176  0.256   -1.73  -0.124   1.10   0.496  0.814   0.484 
     ## # ... with 290 more rows, and 291 more variables: V10 <dbl>, V11 <dbl>,
     ## #   V12 <dbl>, V13 <dbl>, V14 <dbl>, V15 <dbl>, V16 <dbl>, V17 <dbl>,
-    ## #   V18 <dbl>, V19 <dbl>, V20 <dbl>, V21 <dbl>, V22 <dbl>, V23 <dbl>,
-    ## #   causal_24 <dbl>, V25 <dbl>, V26 <dbl>, V27 <dbl>, V28 <dbl>, V29 <dbl>,
-    ## #   V30 <dbl>, V31 <dbl>, V32 <dbl>, V33 <dbl>, V34 <dbl>, V35 <dbl>,
-    ## #   V36 <dbl>, V37 <dbl>, V38 <dbl>, V39 <dbl>, V40 <dbl>, causal_41 <dbl>,
+    ## #   V18 <dbl>, V19 <dbl>, V20 <dbl>, causal_21 <dbl>, V22 <dbl>, V23 <dbl>,
+    ## #   V24 <dbl>, V25 <dbl>, V26 <dbl>, V27 <dbl>, V28 <dbl>, V29 <dbl>,
+    ## #   V30 <dbl>, causal_31 <dbl>, V32 <dbl>, V33 <dbl>, V34 <dbl>, V35 <dbl>,
+    ## #   V36 <dbl>, V37 <dbl>, V38 <dbl>, V39 <dbl>, V40 <dbl>, V41 <dbl>,
     ## #   V42 <dbl>, V43 <dbl>, V44 <dbl>, V45 <dbl>, V46 <dbl>, V47 <dbl>, ...
 
 ## Model for bootstraps
@@ -575,24 +567,24 @@ df_signal %>%
 ```
 
     ## # A tibble: 300 x 301
-    ##    outcome      V1      V2     V3      V4     V5      V6      V7      V8     V9
-    ##      <dbl>   <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>   <dbl>   <dbl>  <dbl>
-    ##  1  -2.21  -0.229   2.13    1.23  -0.143  -0.158  0.667  -0.526  -0.462  -1.84 
-    ##  2   0.169 -1.46   -0.102  -0.384  0.0715  0.580  0.933   1.30    0.741   1.46 
-    ##  3   0.192 -1.24   -0.703  -1.43   0.996   0.277 -1.44   -1.79    0.0583  0.207
-    ##  4  -1.06  -0.303  -0.707   1.07   0.333  -1.08  -0.136   1.06   -0.553   0.326
-    ##  5  -2.70   0.361  -0.301   0.555  1.12   -1.09  -2.07   -0.784  -1.13   -0.656
-    ##  6   1.14  -0.0232 -0.324  -0.575  1.99   -0.720 -0.268  -0.517   1.41   -2.10 
-    ##  7  -0.622 -0.238  -1.14    0.676 -0.200  -1.32   0.275   1.05    0.264  -0.180
-    ##  8  -1.41  -0.0434  0.247  -0.701 -0.602  -0.376  0.440   0.0708 -1.75   -0.108
-    ##  9   0.516 -0.974   3.12    1.16   1.54    0.770  0.0462  0.0744 -0.327  -0.989
-    ## 10  -0.122  0.525   0.0999 -1.15   2.29   -0.847 -0.976  -0.974  -1.50   -0.838
+    ##    outcome      V1     V2     V3      V4      V5     V6     V7      V8      V9
+    ##      <dbl>   <dbl>  <dbl>  <dbl>   <dbl>   <dbl>  <dbl>  <dbl>   <dbl>   <dbl>
+    ##  1  -3.65   0.395  -1.31  -0.709 -0.134   0.578   1.50   1.95   0.247   0.964 
+    ##  2  -0.138 -0.242   1.40  -0.525 -0.0913  0.461   0.340 -0.525 -0.0688 -1.60  
+    ##  3   0.404 -0.268   1.01   0.591 -0.671  -0.0944 -0.106 -1.54  -0.0679  0.0840
+    ##  4   3.91   1.20    1.02  -1.06  -1.45    0.221   0.729  1.49   1.58    2.04  
+    ##  5  -2.23   0.678  -0.419  0.151 -1.08   -1.68    1.44   1.04   0.494  -0.546 
+    ##  6  -2.23  -0.102   1.02   0.198  0.704  -0.243  -0.488  0.268  1.14    0.171 
+    ##  7  -0.642 -0.0508 -0.588 -0.797 -1.04   -0.138   1.81  -0.187  0.819   0.689 
+    ##  8   0.256 -0.162   1.12   1.16   1.65    1.39   -1.07   1.28   1.53    0.590 
+    ##  9   1.50   1.62   -0.314  2.46   1.21    1.94    0.366  0.987 -1.40    0.726 
+    ## 10   0.921  0.258   0.558  1.61  -0.639   0.324  -0.396  0.762  1.51    1.09  
     ## # ... with 290 more rows, and 291 more variables: V10 <dbl>, V11 <dbl>,
     ## #   V12 <dbl>, V13 <dbl>, V14 <dbl>, V15 <dbl>, V16 <dbl>, V17 <dbl>,
-    ## #   V18 <dbl>, V19 <dbl>, V20 <dbl>, V21 <dbl>, V22 <dbl>, V23 <dbl>,
-    ## #   causal_24 <dbl>, V25 <dbl>, V26 <dbl>, V27 <dbl>, V28 <dbl>, V29 <dbl>,
-    ## #   V30 <dbl>, V31 <dbl>, V32 <dbl>, V33 <dbl>, V34 <dbl>, V35 <dbl>,
-    ## #   V36 <dbl>, V37 <dbl>, V38 <dbl>, V39 <dbl>, V40 <dbl>, causal_41 <dbl>,
+    ## #   V18 <dbl>, V19 <dbl>, V20 <dbl>, causal_21 <dbl>, V22 <dbl>, V23 <dbl>,
+    ## #   V24 <dbl>, V25 <dbl>, V26 <dbl>, V27 <dbl>, V28 <dbl>, V29 <dbl>,
+    ## #   V30 <dbl>, causal_31 <dbl>, V32 <dbl>, V33 <dbl>, V34 <dbl>, V35 <dbl>,
+    ## #   V36 <dbl>, V37 <dbl>, V38 <dbl>, V39 <dbl>, V40 <dbl>, V41 <dbl>,
     ## #   V42 <dbl>, V43 <dbl>, V44 <dbl>, V45 <dbl>, V46 <dbl>, V47 <dbl>, ...
 
 By permuting the outcome variable we sever all ties between the outcome
@@ -612,52 +604,57 @@ permuted_datasets$splits[[1]] %>%
 ```
 
     ## # A tibble: 300 x 301
-    ##    outcome      V1      V2     V3      V4     V5      V6      V7      V8     V9
-    ##      <dbl>   <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>   <dbl>   <dbl>  <dbl>
-    ##  1   1.34  -0.229   2.13    1.23  -0.143  -0.158  0.667  -0.526  -0.462  -1.84 
-    ##  2   0.859 -1.46   -0.102  -0.384  0.0715  0.580  0.933   1.30    0.741   1.46 
-    ##  3  -1.28  -1.24   -0.703  -1.43   0.996   0.277 -1.44   -1.79    0.0583  0.207
-    ##  4  -1.48  -0.303  -0.707   1.07   0.333  -1.08  -0.136   1.06   -0.553   0.326
-    ##  5   2.44   0.361  -0.301   0.555  1.12   -1.09  -2.07   -0.784  -1.13   -0.656
-    ##  6  -0.223 -0.0232 -0.324  -0.575  1.99   -0.720 -0.268  -0.517   1.41   -2.10 
-    ##  7  -2.82  -0.238  -1.14    0.676 -0.200  -1.32   0.275   1.05    0.264  -0.180
-    ##  8  -3.76  -0.0434  0.247  -0.701 -0.602  -0.376  0.440   0.0708 -1.75   -0.108
-    ##  9  -0.999 -0.974   3.12    1.16   1.54    0.770  0.0462  0.0744 -0.327  -0.989
-    ## 10   0.795  0.525   0.0999 -1.15   2.29   -0.847 -0.976  -0.974  -1.50   -0.838
+    ##    outcome      V1     V2     V3      V4      V5     V6     V7      V8      V9
+    ##      <dbl>   <dbl>  <dbl>  <dbl>   <dbl>   <dbl>  <dbl>  <dbl>   <dbl>   <dbl>
+    ##  1   0.434  0.395  -1.31  -0.709 -0.134   0.578   1.50   1.95   0.247   0.964 
+    ##  2  -1.62  -0.242   1.40  -0.525 -0.0913  0.461   0.340 -0.525 -0.0688 -1.60  
+    ##  3  -2.38  -0.268   1.01   0.591 -0.671  -0.0944 -0.106 -1.54  -0.0679  0.0840
+    ##  4  -1.02   1.20    1.02  -1.06  -1.45    0.221   0.729  1.49   1.58    2.04  
+    ##  5   0.627  0.678  -0.419  0.151 -1.08   -1.68    1.44   1.04   0.494  -0.546 
+    ##  6   1.92  -0.102   1.02   0.198  0.704  -0.243  -0.488  0.268  1.14    0.171 
+    ##  7   0.399 -0.0508 -0.588 -0.797 -1.04   -0.138   1.81  -0.187  0.819   0.689 
+    ##  8   0.156 -0.162   1.12   1.16   1.65    1.39   -1.07   1.28   1.53    0.590 
+    ##  9   2.46   1.62   -0.314  2.46   1.21    1.94    0.366  0.987 -1.40    0.726 
+    ## 10  -2.32   0.258   0.558  1.61  -0.639   0.324  -0.396  0.762  1.51    1.09  
     ## # ... with 290 more rows, and 291 more variables: V10 <dbl>, V11 <dbl>,
     ## #   V12 <dbl>, V13 <dbl>, V14 <dbl>, V15 <dbl>, V16 <dbl>, V17 <dbl>,
-    ## #   V18 <dbl>, V19 <dbl>, V20 <dbl>, V21 <dbl>, V22 <dbl>, V23 <dbl>,
-    ## #   causal_24 <dbl>, V25 <dbl>, V26 <dbl>, V27 <dbl>, V28 <dbl>, V29 <dbl>,
-    ## #   V30 <dbl>, V31 <dbl>, V32 <dbl>, V33 <dbl>, V34 <dbl>, V35 <dbl>,
-    ## #   V36 <dbl>, V37 <dbl>, V38 <dbl>, V39 <dbl>, V40 <dbl>, causal_41 <dbl>,
+    ## #   V18 <dbl>, V19 <dbl>, V20 <dbl>, causal_21 <dbl>, V22 <dbl>, V23 <dbl>,
+    ## #   V24 <dbl>, V25 <dbl>, V26 <dbl>, V27 <dbl>, V28 <dbl>, V29 <dbl>,
+    ## #   V30 <dbl>, causal_31 <dbl>, V32 <dbl>, V33 <dbl>, V34 <dbl>, V35 <dbl>,
+    ## #   V36 <dbl>, V37 <dbl>, V38 <dbl>, V39 <dbl>, V40 <dbl>, V41 <dbl>,
     ## #   V42 <dbl>, V43 <dbl>, V44 <dbl>, V45 <dbl>, V46 <dbl>, V47 <dbl>, ...
 
 We can then apply our bootstrap function to each one of these 5 permuted
-datasets. We might perform 10 bootstrap samples for each of the 5
-permuted datasets. The model would then be applied to each dataset
-within the following table.
+datasets. We might perform 3 bootstrap samples for each of the 5
+permuted datasets for this example (this is typically 20 bootstraps for
+each of 5 permutations in reality). The model would then be applied to
+each dataset within the following table.
 
 ``` r
 permuted_bootstrapped_datasets <- permuted_datasets %>%
-  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% boot_sample(., boot_reps = 10), .id = "permutation")
+  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% boot_sample(., boot_reps = 3), .id = "permutation")
 
 permuted_bootstrapped_datasets
 ```
 
-    ## # A tibble: 50 x 3
-    ##    permutation splits            id         
-    ##    <chr>       <list>            <chr>      
-    ##  1 1           <split [300/115]> Bootstrap01
-    ##  2 1           <split [300/117]> Bootstrap02
-    ##  3 1           <split [300/107]> Bootstrap03
-    ##  4 1           <split [300/109]> Bootstrap04
-    ##  5 1           <split [300/104]> Bootstrap05
-    ##  6 1           <split [300/109]> Bootstrap06
-    ##  7 1           <split [300/100]> Bootstrap07
-    ##  8 1           <split [300/111]> Bootstrap08
-    ##  9 1           <split [300/111]> Bootstrap09
-    ## 10 1           <split [300/114]> Bootstrap10
-    ## # ... with 40 more rows
+    ## # A tibble: 15 x 3
+    ##    permutation splits            id        
+    ##    <chr>       <list>            <chr>     
+    ##  1 1           <split [300/112]> Bootstrap1
+    ##  2 1           <split [300/113]> Bootstrap2
+    ##  3 1           <split [300/108]> Bootstrap3
+    ##  4 2           <split [300/107]> Bootstrap1
+    ##  5 2           <split [300/111]> Bootstrap2
+    ##  6 2           <split [300/107]> Bootstrap3
+    ##  7 3           <split [300/106]> Bootstrap1
+    ##  8 3           <split [300/104]> Bootstrap2
+    ##  9 3           <split [300/114]> Bootstrap3
+    ## 10 4           <split [300/111]> Bootstrap1
+    ## 11 4           <split [300/112]> Bootstrap2
+    ## 12 4           <split [300/111]> Bootstrap3
+    ## 13 5           <split [300/110]> Bootstrap1
+    ## 14 5           <split [300/113]> Bootstrap2
+    ## 15 5           <split [300/115]> Bootstrap3
 
 This code is relatively lengthy, and is therefore deliberately omitted
 from the workshop, however is present within the *stabiliser* package
@@ -701,7 +698,8 @@ stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic
 ```
 
 Access the stability (percentage of bootstrap resamples where a given
-variable was selected by a given model) results for as follows:
+variable was selected by a given model) results for elastic net as
+follows:
 
 ``` r
 stab_output$mbic$stability
@@ -710,16 +708,16 @@ stab_output$mbic$stability
     ## # A tibble: 301 x 7
     ##    variable   mean_coefficient ci_lower ci_upper bootstrap_p stability stable
     ##    <chr>                 <dbl>    <dbl>    <dbl>       <dbl>     <dbl> <chr> 
-    ##  1 causal_179            0.446    0.322    0.539           0       100 *     
-    ##  2 causal_258            0.490    0.388    0.588           0       100 *     
-    ##  3 causal_108            0.398    0.290    0.529           0        98 *     
-    ##  4 causal_261            0.393    0.279    0.504           0        96 *     
-    ##  5 causal_24             0.359    0.271    0.463           0        93 *     
-    ##  6 causal_92             0.407    0.297    0.503           0        92 *     
-    ##  7 causal_41             0.337    0.249    0.449           0        85 *     
-    ##  8 causal_117            0.349    0.256    0.456           0        84 *     
-    ##  9 V3                   -0.254   -0.330   -0.206           0        22 *     
-    ## 10 V67                  -0.248   -0.298   -0.204           0        14 <NA>  
+    ##  1 causal_21             0.465    0.330    0.632           0       100 *     
+    ##  2 causal_286            0.474    0.352    0.606           0       100 *     
+    ##  3 causal_140            0.447    0.308    0.597           0        95 *     
+    ##  4 causal_31             0.397    0.271    0.522           0        95 *     
+    ##  5 causal_117            0.362    0.266    0.481           0        90 *     
+    ##  6 causal_278            0.411    0.296    0.531           0        73 *     
+    ##  7 causal_200            0.379    0.293    0.458           0        53 *     
+    ##  8 causal_256            0.304    0.237    0.418           0        30 *     
+    ##  9 V252                  0.279    0.242    0.324           0         9 <NA>  
+    ## 10 V257                  0.275    0.232    0.326           0         9 <NA>  
     ## # ... with 291 more rows
 
 This ranks the variables by stability, and displays the mean
@@ -747,7 +745,7 @@ The permutation threshold is available as follows:
 stab_output$mbic$perm_thresh
 ```
 
-    ## [1] 22
+    ## [1] 23
 
 The *stabiliser* package allows multiple models to be run
 simultaneously. Just select the models you wish to run in the “models”
@@ -757,8 +755,7 @@ MCP is omitted here for speed. To include it, just add it to the list of
 models using: models = c(“mbic”, “lasso”, “mcp”)
 
 ``` r
-#stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic", "lasso"), type = "linear")
-stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic"), type = "linear")
+stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic", "lasso"), type = "linear")
 ```
 
 ## Results
@@ -776,10 +773,11 @@ stability_results <- stab_output %>%
 stability_results
 ```
 
-    ## # A tibble: 1 x 4
+    ## # A tibble: 2 x 4
     ##   model_stability tp_stability fp_stability total_selected_stability
     ##   <chr>                  <int>        <int>                    <int>
-    ## 1 mbic                       8            0                        8
+    ## 1 lasso                      7            0                        7
+    ## 2 mbic                       8            0                        8
 
 Compare this with the non-stability approach
 
@@ -791,10 +789,10 @@ conventional_results %>%
     ## # A tibble: 4 x 7
     ##   model      tp    fp total_selected tp_stability fp_stability total_selected_s~
     ##   <chr>   <int> <int>          <int>        <int>        <int>             <int>
-    ## 1 lasso       8    25             33           NA           NA                NA
-    ## 2 mbic        8     0              8            8            0                 8
-    ## 3 mcp         8     9             17           NA           NA                NA
-    ## 4 prefil~     8     8             16           NA           NA                NA
+    ## 1 lasso       8    10             18            7            0                 7
+    ## 2 mbic        6     0              6            8            0                 8
+    ## 3 mcp         8     2             10           NA           NA                NA
+    ## 4 prefil~     8    14             22           NA           NA                NA
 
 # Triangulation
 
@@ -817,26 +815,26 @@ triangulated_stability
     ## # A tibble: 301 x 4
     ##    variable   stability bootstrap_p stable
     ##    <chr>          <dbl>       <dbl> <chr> 
-    ##  1 causal_179       100           0 *     
-    ##  2 causal_258       100           0 *     
-    ##  3 causal_108        99           0 *     
-    ##  4 causal_24         98           0 *     
-    ##  5 causal_261        97           0 *     
-    ##  6 causal_117        93           0 *     
-    ##  7 causal_41         92           0 *     
-    ##  8 causal_92         92           0 *     
-    ##  9 V3                18           0 <NA>  
-    ## 10 V67                8           0 <NA>  
+    ##  1 causal_286      99.5           0 *     
+    ##  2 causal_31       99.5           0 *     
+    ##  3 causal_21       99             0 *     
+    ##  4 causal_140      98.5           0 *     
+    ##  5 causal_117      95             0 *     
+    ##  6 causal_278      93             0 *     
+    ##  7 causal_200      75             0 *     
+    ##  8 causal_256      63             0 *     
+    ##  9 V252            44.5           0 <NA>  
+    ## 10 V203            44             0 <NA>  
     ## # ... with 291 more rows
     ## 
     ## $combi$perm_thresh
-    ## [1] 23
+    ## [1] 58.5
 
 ``` r
 stab_plot(triangulated_stability)
 ```
 
-![](README_files/figure-gfm/stab_plot-1.png)<!-- -->
+![](README_files/figure-gfmstab_plot-1.png)<!-- -->
 
 ## No signal datasets
 
@@ -851,27 +849,29 @@ variable.
 prefiltration_results
 ```
 
-    ## # A tibble: 9 x 5
+    ## # A tibble: 5 x 5
     ##   variable estimate std.error statistic p.value
     ##   <chr>       <dbl>     <dbl>     <dbl>   <dbl>
-    ## 1 X21        -0.146    0.0599     -2.44 0.0157 
-    ## 2 X30         0.169    0.0691      2.45 0.0153 
-    ## 3 X46         0.190    0.0631      3.01 0.00302
-    ## 4 X81         0.173    0.0628      2.76 0.00643
-    ## 5 X96         0.140    0.0684      2.05 0.0415 
-    ## 6 X98         0.182    0.0679      2.69 0.00787
-    ## 7 X100        0.179    0.0664      2.69 0.00781
-    ## 8 X103        0.163    0.0616      2.64 0.00905
-    ## 9 X116        0.140    0.0665      2.11 0.0363
+    ## 1 X24         0.133    0.0654      2.03  0.0439
+    ## 2 X41        -0.147    0.0678     -2.17  0.0311
+    ## 3 X76        -0.129    0.0641     -2.02  0.0449
+    ## 4 X106        0.177    0.0689      2.57  0.0110
+    ## 5 X120        0.149    0.0640      2.33  0.0207
 
-Using *stabiliser*, the following variables are selected from the
-dataset.
+The `stabilise()` and `triangulate()` functions from the *stabiliser*
+package can be used to perform stability selection with multiple models,
+and utilise a robust threhsold to identify which variables are
+associated with the outcome.
 
 ``` r
-# stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic", "lasso"), type = "linear")
-stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic"), type = "linear")
+stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic", "lasso"), type = "linear")
 triangulated_output_no_signal <- triangulate(stab_output_no_signal)
+```
 
+The following table includes all variables selected from the dataset
+with no signal.
+
+``` r
 triangulated_output_no_signal$combi$stability %>%
   filter(stable == "*")
 ```

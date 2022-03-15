@@ -343,7 +343,7 @@ conventional_results
 
 ## Stability selection
 
-Stability selection relies heavily on bootstrapping. An example of the bootstrapping approach is shown below. 
+Stability selection relies heavily on bootstrapping. An example of the bootstrapping approach is shown below (in reality 100-200 bootstrap resamples might be conducted). 
 
 ```{r}
 boot_sample <- function(data, boot_reps) {
@@ -400,11 +400,11 @@ permuted_datasets$splits[[1]] %>%
   as_tibble()
 ```
 
-We can then apply our bootstrap function to each one of these 5 permuted datasets. We might perform 10 bootstrap samples for each of the 5 permuted datasets. The model would then be applied to each dataset within the following table. 
+We can then apply our bootstrap function to each one of these 5 permuted datasets. We might perform 3 bootstrap samples for each of the 5 permuted datasets for this example (this is typically 20 bootstraps for each of 5 permutations in reality). The model would then be applied to each dataset within the following table. 
 
 ```{r}
 permuted_bootstrapped_datasets <- permuted_datasets %>%
-  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% boot_sample(., boot_reps = 10), .id = "permutation")
+  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% boot_sample(., boot_reps = 3), .id = "permutation")
 
 permuted_bootstrapped_datasets
 ```
@@ -458,8 +458,7 @@ The *stabiliser* package allows multiple models to be run simultaneously. Just s
 MCP is omitted here for speed. To include it, just add it to the list of models using: models = c("mbic", "lasso", "mcp")
 
 ```{r}
-#stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic", "lasso"), type = "linear")
-stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic"), type = "linear")
+stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic", "lasso"), type = "linear")
 ```
 
 ## Results
@@ -495,22 +494,36 @@ triangulated_stability <- triangulate(stab_output)
 triangulated_stability
 ```
 
-```{r eval=FALSE}
+```{r }
 stab_plot(triangulated_stability)
 ```
-```{r stab_plot, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE}
-triangulated_stability$combi$stability %>%
-    filter(!is.na(bootstrap_p)) %>%
-    mutate(causal = case_when(grepl("causal", variable) ~ "Causal",
-                              TRUE ~ "Junk")) %>%
-    ggplot(aes(x = stability, y = bootstrap_p, colour = causal)) +
-    geom_jitter(height = 0.05, width = 1) +
-    geom_vline(xintercept = triangulated$combi$perm_thresh) +
-    labs(
-      x = "Stability (%)",
-      y = "Bootstrap-p",
-      colour = "Variable"
-    ) +
-    scale_y_reverse()+
-    theme_minimal()
+
+## No signal datasets
+
+We can now return to our original dataset that we simulated to have no signal. 
+
+Our conventional approach performed relatively poorly, selecting the following variables as being significantly associated with the outcome variable. 
+
+```{r}
+prefiltration_results
 ```
+
+The `stabilise()` and `triangulate()` functions from the *stabiliser* package can be used to perform stability selection with multiple models, and utilise a robust threhsold to identify which variables are associated with the outcome. 
+
+```{r}
+stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic", "lasso"), type = "linear")
+triangulated_output_no_signal <- triangulate(stab_output_no_signal)
+```
+
+The following table includes all variables selected from the dataset with no signal.
+
+```{r}
+triangulated_output_no_signal$combi$stability %>%
+  filter(stable == "*")
+```
+
+## Conclusions
+
+Thank you for attending this workshop. We hope you enjoyed the session, and have a good understanding of where some conventional modelling approaches might not be appropriate in wider datasets. 
+
+If you have any further questions after the workshop, please feel free to contact Martin Green (martin.green@nottingham.ac.uk) or Robert Hyde (robert.hyde4@nottingham.ac.uk).
