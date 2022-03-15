@@ -88,6 +88,8 @@ df_no_signal %>%
 
 ## Conventional approaches
 
+### Univariable prefiltration
+
 The following function conducts univariable analysis to determine the association between a given variable and the outcome. A pearson/spearman rank correlation matrix is another option for this. 
 
 ```{r}
@@ -111,6 +113,8 @@ A conventional approach would then filter at a given threshold (for example P<0.
 univariable_outcomes_filtered <- univariable_outcomes %>%
   filter(p.value < 0.2)
 ```
+
+### Stepwise regression
 
 This results in a table below of all of the variables that have a p-value of <0.2 to be carried forward into a multivariable model. 
 
@@ -154,6 +158,10 @@ We will test a variety of models on this dataset. For future comparison let's se
 model_results <- list()
 ```
 
+We will also want to explore some simulated datasets with a true signal; i.e., some of the variables in our dataset are truly associated with the outcome. 
+
+The following function generates a dataset with *nrow* rows and *ncol* variables, of which *n_causal_vars* variables are truly associated with the outcome with a signal strength of *amplitude*.
+
 ```{r}
 generate_data_with_signal <- function(nrow, ncol, n_causal_vars, amplitude) {
   # Generate the variables from a multivariate normal distribution
@@ -183,7 +191,7 @@ generate_data_with_signal <- function(nrow, ncol, n_causal_vars, amplitude) {
 
 We can now simulate a dataset df_signal with 300 rows and 300 variables, 8 of which have a relationship with the outcome. 
 
-We can also alter the signal strenght of causal variables by changing the "amplitute" paramater. 
+We can also alter the signal strength of causal variables by changing the *amplitute* paramater. 
 
 ```{r}
 df_signal <- generate_data_with_signal(nrow = 300, ncol = 300, n_causal_vars = 8, amplitude = 7)
@@ -191,7 +199,7 @@ df_signal <- generate_data_with_signal(nrow = 300, ncol = 300, n_causal_vars = 8
 
 ## "Cheat" model
 
-As we have simulated this dataset, we can "cheat" and create the perfect model to check everything's worked correctly. 
+As we have simulated this dataset, we can "cheat" and create the perfect model to check everything's worked correctly.
 
 ```{r}
 df_signal %>%
@@ -309,7 +317,7 @@ model_mbic <- function(data) {
 model_results$mbic <- model_mbic(df_signal)
 ```
 
-A comparison of the number of True/False positives is shown below:
+A comparison of the number of True/False positives is shown below, by using a *calculate_tp_fp()* function. 
 
 ```{r}
 calculate_tp_fp <- function(results) {
@@ -335,7 +343,7 @@ conventional_results
 
 ## Stability selection
 
-Function for bootstrapping
+Stability selection relies heavily on bootstrapping. An example of the bootstrapping approach is shown below. 
 
 ```{r}
 boot_sample <- function(data, boot_reps) {
@@ -376,6 +384,7 @@ Our original dataset looks like this:
 
 ```{r}
 df_signal %>%
+  as_tibble()
 ```
 
 By permuting the outcome variable we sever all ties between the outcome and the explanatory variables. We might want to conduct this 5 times. 
@@ -412,13 +421,37 @@ Variables in the true model (i.e., non-permuted data) that have a stability valu
 
 ## The *stabiliser* approach
 
+The goal of the *stabiliser* package is to provide a flexible method of applying stability selection (Meinshausen and Buhlmann, 2010) with various model types, and the framework for triangulating the results for multiple models (Lima et al., 2021). 
+
+* `stabilise()` performs stability selection on a range of models to identify causal models.
+* `triangulate()` identifies which variables are most likely to be causal across all models. 
+* `stab_plot()` allows visualisation of either `stabilise()` or `triangulate()` outputs. 
+
+To attempt to identify which variables are truly "causal" in this dataset using a selection stability approach, use the `stabilise()` function as follows:
+
 ```{r}
 stab_output <- stabilise(outcome = "outcome", data = df_signal, models = c("mbic"), type = "linear")
+```
 
+Access the stability (percentage of bootstrap resamples where a given variable was selected by a given model) results for elastic net as follows:
+
+```{r}
 stab_output$mbic$stability
 ```
 
-## All models 
+This ranks the variables by stability, and displays the mean coefficients, 95% confidence interval and bootstrap p-value. It also displays whether the variable is deemed "stable".
+
+By default, this implements an elastic net algorithm over a number of bootstrap resamples of the dataset (200 resamples for small datasets). The stability of each variable is then calculated as the proportion of bootstrap repeats where that variable is selected in the model. 
+
+`stabilise()` also permutes the outcome several times (10 by default for small datasets) and performs the same process on each permuted dataset (20 bootstrap resamples for each by default).
+
+This allows a permutation threshold to be calculated. Variables with a non-permuted stability % above this threshold are deemed "stable" as they were selected in a higher proportion of bootstrap resamples than in the permuted datasets, where we know there is no association between variables and the outcome.  
+
+The permutation threshold is available as follows: 
+
+```{r}
+stab_output$mbic$perm_thresh
+```
 
 The *stabiliser* package allows multiple models to be run simultaneously. Just select the models you wish to run in the "models" argument. 
 
@@ -452,6 +485,8 @@ conventional_results %>%
 
 # Triangulation
 
+Our confidence that a given variable is truly associated with a given outcome might be increased if it is identified in multiple model types. 
+
 The *stabiliser* package allows the stability selection results from multiple models to be used synergistically, and by leveraging the strenghts of various models, a more robust method of variable selection is often achieved. 
 
 ```{r}
@@ -460,33 +495,22 @@ triangulated_stability <- triangulate(stab_output)
 triangulated_stability
 ```
 
-```{r}
+```{r eval=FALSE}
 stab_plot(triangulated_stability)
 ```
-
-## No signal datasets
-
-We can now return to our original dataset that we simulated to have no signal. 
-
-Our conventional approach performed relatively poorly, selecting the following variables as being significantly associated with the outcome variable. 
-
-```{r}
-prefiltration_results
+```{r stab_plot, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE}
+triangulated_stability$combi$stability %>%
+    filter(!is.na(bootstrap_p)) %>%
+    mutate(causal = case_when(grepl("causal", variable) ~ "Causal",
+                              TRUE ~ "Junk")) %>%
+    ggplot(aes(x = stability, y = bootstrap_p, colour = causal)) +
+    geom_jitter(height = 0.05, width = 1) +
+    geom_vline(xintercept = triangulated$combi$perm_thresh) +
+    labs(
+      x = "Stability (%)",
+      y = "Bootstrap-p",
+      colour = "Variable"
+    ) +
+    scale_y_reverse()+
+    theme_minimal()
 ```
-
-Using *stabiliser*, the following variables are selected from the dataset.
-
-```{r}
-# stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic", "lasso"), type = "linear")
-stab_output_no_signal <- stabilise(outcome = "outcome", data = df_no_signal, models = c("mbic"), type = "linear")
-triangulated_output_no_signal <- triangulate(stab_output_no_signal)
-
-triangulated_output_no_signal$combi$stability %>%
-  filter(stable == "*")
-```
-
-## Conclusions
-
-Thank you for attending this workshop. We hope you enjoyed the session, and have a good understanding of where some conventional modelling approaches might not be appropriate in wider datasets. 
-
-If you have any further questions after the workshop, please feel free to contact Martin Green (martin.green@nottingham.ac.uk) or Robert Hyde (robert.hyde4@nottingham.ac.uk).
