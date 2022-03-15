@@ -1,0 +1,337 @@
+---
+title: "SVEPM Workshop 2022"
+output:
+  html_document:
+    df_print: paged
+---
+```{r  global_options, echo=FALSE}
+knitr::opts_chunk$set(error = FALSE, message = FALSE,
+warning = FALSE)
+```
+
+## Introduction
+
+The following packages are required for these excersises. 
+
+```{r}
+library(Hmisc)
+library(broom)
+library(glmnet)
+library(ncvreg)
+library(bigstep)
+library(tidyverse)
+library(stabiliser)
+```
+
+## Simulating data
+
+In order to appreciate the issues we will be discussing today, we have provided functions to simulate datasets for exploration. 
+
+The following function generates a dataset with "ncols" as the number of variables and "nrows" as the number of rows. 
+
+```{r}
+generate_uncor_variables <- function(ncols, nrows){
+  df <- data.frame(replicate(ncols, rnorm(nrows, 0, 1)))
+  df
+}
+```
+
+A dataset with 197 rows and 130 variables can be generated as follows: 
+
+```{r}
+variables <- generate_uncor_variables(ncols=130, nrows=197)
+```
+
+This results in the following dataset being generated:
+
+```{r}
+variables
+```
+
+We can also generate an outcome variable, in this case randomly generated in the same manner, but renaming as "outcome"
+
+```{r}
+generate_uncor_outcome <- function(nrows, seed=224){
+  set.seed(seed)
+  data.frame(replicate(1, rnorm(nrows, 0, 1))) %>%
+    rename("outcome" = 1)
+}
+
+outcome <- generate_uncor_outcome(nrows=197)
+
+outcome
+```
+
+We can now bind together the uncorrelated, randomly generated variables, with the randomly generated outcome. 
+
+```{r}
+df <- outcome %>%
+  bind_cols(variables)
+```
+
+This results in a dataset as follows: 
+
+```{r}
+df
+```
+
+## Conventional approaches
+
+We will test a variety of models on this dataset. For future comparison let's set up a list where we can store model results
+
+```{r}
+model_results <- list()
+```
+
+
+The following function conducts univariable analysis to determine the association between a given variable and the outcome. 
+
+SPEARMAN/PEARSON/UNIVARIABLE MODEL available
+
+```{r}
+univariable_analysis <- function(data, variable){
+  data %>%
+    lm(outcome ~ variable, .) %>%
+    tidy() %>%
+    filter(term != "(Intercept)")
+}
+```
+
+EXAMPLE OF ONE VARIABLE
+
+
+This function can then be applied using map_df() to each column of the dataset individually and return a dataframe. 
+
+```{r}
+univariable_outcomes <- map_df(df, ~univariable_analysis(data=df, variable=.), .id="variable")
+```
+
+A conventional approach would then filter at a given threshold (for example P<0.2) 
+
+```{r}
+univariable_outcomes_filtered <- univariable_outcomes %>%
+  filter(p.value < 0.2)
+
+univariable_outcomes_filtered
+```
+
+A list of variables to be included is as follows: 
+
+```{r}
+variables_for_stepwise <- univariable_outcomes_filtered %>%
+  pull(variable)
+```
+
+These variables would subsequently be offered into a stepwise selection process such as the following
+
+```{r}
+stepwise_model <- function(data, variables){
+  data_selected <- data %>%
+    select(variables)
+  
+  lm(outcome ~ ., data=data_selected) %>%
+    step(., direction="backward", trace = FALSE) %>%
+    tidy() %>%
+    filter(p.value < 0.05) %>%
+    rename(variable = term)
+}
+
+model_results$prefiltration <- stepwise_model(data = df, variables = variables_for_stepwise)
+
+model_results$prefiltration
+```
+
+## Data with a true signal 
+
+```{r}
+generate_data_with_signal <- function(nrow, ncol, n_causal_vars, amplitude){
+  set.seed(59719)
+# Generate the variables from a multivariate normal distribution
+mu = rep(0,ncol)
+rho = 0.25
+sigma = toeplitz(rho^(0:(ncol-1))) #  Symmetric Toeplitz Matrix
+X = matrix(rnorm(nrow*ncol),nrow) %*% chol(sigma) # multiply matrices Choleski Decomposition. Description. Compute the Choleski factorization of a real symmetric positive-definite square matrix)
+
+# Generate the response from a linear model
+nonzero = sample(ncol, n_causal_vars) # select the id of 'true' variables
+beta = amplitude * (1:ncol %in% nonzero) / sqrt(nrow) # vector of effect sizes to pick out true varaiables
+beta_value =  amplitude / sqrt(nrow)
+outcome.sample = function(X) X %*% beta + rnorm(nrow) # calculate outcome from true vars and error
+outcome = outcome.sample(X)
+
+## Rename true variables
+X_data <- as.data.frame(X)
+for(i in c(nonzero)){
+  X_data1 <- X_data %>% 
+    rename_with(.cols = i, ~paste("causal_",i,sep=""))
+  X_data<-X_data1
+}
+
+dataset_sim <- as.data.frame(cbind(outcome, X_data1))
+}
+
+```
+
+Plot signal strengths
+
+True "cheat" model
+
+```{r}
+df <- generate_data_with_signal(nrow=300, ncol=300, n_causal_vars = 8, amplitude = 7)
+univariable_outcomes <- map_df(df, ~univariable_analysis(data=df, variable=.), .id="variable")
+univariable_outcomes_filtered <- univariable_outcomes %>%
+  filter(p.value < 0.2)
+variables_for_stepwise <- univariable_outcomes_filtered %>%
+  pull(variable)
+stepwise_model(data = df, variables = variables_for_stepwise)
+```
+
+## Regularisation
+
+```{r}
+model_lasso <- function(data) {
+  y_temp <- data %>%
+    select("outcome") %>%
+    as.matrix()
+
+  x_temp <- data %>%
+    select(-"outcome") %>%
+    as.matrix()
+
+  fit_lasso <- cv.glmnet(x = x_temp, y = y_temp, alpha=1)
+
+  coefs <- coef(fit_lasso, s = "lambda.min")
+
+  data.frame(name = coefs@Dimnames[[1]][coefs@i + 1], coefficient = coefs@x) %>%
+    rename(
+      variable = name,
+      estimate = coefficient
+    ) %>%
+    filter(variable != "(Intercept)") %>%
+    select(variable, estimate)
+}
+
+model_results$lasso <- model_lasso(df)
+```
+
+MCP can also be used 
+
+```{r}
+model_mcp <- function(data) {
+  y_temp <- data %>%
+    select("outcome") %>%
+    as.matrix()
+
+  x_temp <- data %>%
+    select(-"outcome")
+
+  fit_mcp <- cv.ncvreg(X = x_temp, y = y_temp)
+
+  fit_mcp %>%
+    coef() %>%
+    as_tibble(rownames = "variable") %>%
+    rename(
+      estimate = value
+    ) %>%
+    filter(
+      variable != "(Intercept)",
+      estimate != 0,
+      !grepl("(Intercept)", variable),
+      !grepl("Xm[, -1]", variable)
+    ) %>%
+    mutate(variable = str_remove_all(variable, "`"))
+}
+
+model_results$mcp <- model_mcp(df)
+```
+
+
+MBIC can also be used
+
+```{r}
+model_mbic <- function(data) {
+  
+  y_temp <- data %>%
+    select("outcome") %>%
+    as.matrix()
+
+  x_temp <- data %>%
+    select(-"outcome")
+
+  bigstep_prepped <- bigstep::prepare_data(y_temp, x_temp, verbose = FALSE)
+
+  bigstep_prepped %>%
+    reduce_matrix(minpv = 0.01) %>%
+    fast_forward(crit = mbic) %>%
+    multi_backward(crit = mbic) %>%
+    summary() %>%
+    stats::coef() %>%
+    as.data.frame() %>%
+    rownames_to_column(., var = "variable") %>%
+    mutate(variable = str_remove_all(variable, "`")) %>%
+    filter(
+      !grepl("(Intercept)", variable),
+      !grepl("Xm[, -1]", variable)
+    ) %>%
+    rename(estimate = Estimate) %>%
+    select(variable, estimate)
+  
+}
+
+model_results$mbic <- model_mbic(df)
+```
+
+A comparison of the number of True/False positives is shown below:
+
+```{r}
+model_results %>%
+  bind_rows(., .id = "model") %>%
+  mutate(causal = case_when(grepl("causal", variable) ~ "TP",
+                            !grepl("causal", variable) ~ "FP")) %>%
+  group_by(model, causal) %>%
+  count() %>%
+  spread(causal, n) %>%
+  mutate(TP = replace_na(TP, 0),
+         FP = replace_na(FP, 0),
+         "Total selected" = TP + FP)
+```
+
+## Stability selection
+
+Function for bootstrapping
+
+Model for bootstraps (lasso)
+
+Permutation approach
+
+Draw the line
+
+## stabiliser approach
+
+```{r}
+stab_output <- stabilise(outcome = "outcome", data = df, models = c("mbic"), type = "linear")
+
+stab_output$mbic$stability
+```
+
+All models 
+
+```{r}
+
+```
+
+# Plot differences between stab and non-stab
+
+# Triangulation
+
+```{r}
+stab_output <- stabilise(outcome = "outcome", data = df, models = c("lasso", "enet"), type = "linear")
+
+stab_output$lasso$stability
+stab_output$enet$stability
+
+triangulate(stab_output)
+```
+
+
+
