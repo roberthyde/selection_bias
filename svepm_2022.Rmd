@@ -162,14 +162,14 @@ generate_data_with_signal <- function(nrow, ncol, n_causal_vars, amplitude) {
   outcome <- outcome.sample(X)
 
   ## Rename true variables
-  X_data <- as.data.frame(X)
+  X_data <- as_data_frame(X)
   for (i in c(nonzero)) {
     X_data1 <- X_data %>%
       rename_with(.cols = i, ~ paste("causal_", i, sep = ""))
     X_data <- X_data1
   }
 
-  dataset_sim <- as.data.frame(cbind(outcome, X_data1))
+  dataset_sim <- as_data_frame(cbind(outcome, X_data1))
 }
 ```
 
@@ -203,7 +203,7 @@ model_lasso <- function(data) {
 
   coefs <- coef(fit_lasso, s = "lambda.min")
 
-  data.frame(name = coefs@Dimnames[[1]][coefs@i + 1], coefficient = coefs@x) %>%
+  data_frame(name = coefs@Dimnames[[1]][coefs@i + 1], coefficient = coefs@x) %>%
     rename(
       variable = name,
       estimate = coefficient
@@ -265,7 +265,7 @@ model_mbic <- function(data) {
     multi_backward(crit = mbic) %>%
     summary() %>%
     stats::coef() %>%
-    as.data.frame() %>%
+    as_data_frame() %>%
     rownames_to_column(., var = "variable") %>%
     mutate(variable = str_remove_all(variable, "`")) %>%
     filter(
@@ -333,7 +333,7 @@ We can apply our previous lasso function over each one of these bootstrapped res
 
 ```{r}
 model_lasso_bootstrapped <- bootstrapped_datasets %>%
-  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% model_lasso(.), .id = "bootstrap")
+  map_df(.x = .$splits, .f = ~ as_data_frame(.) %>% model_lasso(.), .id = "bootstrap")
 ```
 
 ## Permutation
@@ -363,7 +363,7 @@ We can then apply our bootstrap function to each one of these 5 permuted dataset
 
 ```{r}
 permuted_bootstrapped_datasets <- permuted_datasets %>%
-  map_df(.x = .$splits, .f = ~ as.data.frame(.) %>% boot_sample(., boot_reps = 10), .id = "permutation")
+  map_df(.x = .$splits, .f = ~ as_data_frame(.) %>% boot_sample(., boot_reps = 10), .id = "permutation")
 
 permuted_bootstrapped_datasets
 ```
