@@ -399,7 +399,8 @@ model_lasso_bootstrapped <- bootstrapped_datasets %>%
 The output from this shows the variables selected by lasso for each bootstrap repeat
 
 ```{r}
-model_lasso_bootstrapped
+model_lasso_bootstrapped %>%
+  as_tibble()
 ```
 
 We can calculate stability for each variable by the number of times it was selected across bootstraps. 
