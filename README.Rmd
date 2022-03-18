@@ -187,13 +187,15 @@ prefiltration_results  <- df_no_signal %>%
   select(outcome, variables_final_model$variable) %>%
   lm(outcome ~ ., data = .)
 
-tidy(prefiltration_results)
+prefiltration_results %>%
+  tidy()
 ```
 
 We can also calculate the R2 for this model.
 
 ```{r}
-glance(prefiltration_results)
+prefiltration_results %>%
+  glance()
 ```
 
 ## Data with a true signal 
@@ -551,7 +553,8 @@ We can now return to our original dataset that we simulated to have no signal.
 Our conventional approach performed relatively poorly, selecting the following variables as being significantly associated with the outcome variable. 
 
 ```{r}
-prefiltration_results
+prefiltration_results %>%
+  tidy()
 ```
 
 The `stabilise()` and `triangulate()` functions from the *stabiliser* package can be used to perform stability selection with multiple models, and utilise a robust threhsold to identify which variables are associated with the outcome. 
