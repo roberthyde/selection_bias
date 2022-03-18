@@ -42,6 +42,7 @@ library(glmnet)
 library(ncvreg)
 library(bigstep)
 library(rsample)
+library(rms)
 library(tidyverse)
 library(stabiliser)
 ```
@@ -159,35 +160,28 @@ These variables would subsequently be offered into a stepwise selection process 
 ```{r}
 stepwise_model <- function(data, variables) {
   data_selected <- data %>%
-    select(variables)
-
-  lm(outcome ~ ., data = data_selected) %>%
-    step(., direction = "backward", trace = FALSE) %>%
-    tidy() %>%
-    filter(p.value < 0.05) %>%
-    rename(variable = term)
+    dplyr::select(variables)
+  model1 <- ols(outcome ~ ., data=data_selected)
+  model2 <- fastbw(fit = model1, rule = "p", sls = 0.05)
+  final_terms <- model2$names.kept
+  final_data <- data %>% 
+    select(outcome, final_terms)
+  final_model <- summary(lm(outcome~., data = final_data ))
 }
 
-stepwise_selected_vars <- stepwise_model(data = df_no_signal, variables = variables_for_stepwise)
-```
+prefiltration_model <- stepwise_model(data = df_no_signal, variables = variables_for_stepwise)
 
-We can then extract the variables from this stepwise approach and refit in a final model. 
+prefiltration_results <- prefiltration_model$coefficients %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "variable")
 
-```{r}
-variables_final_model <- stepwise_selected_vars %>%
-  filter(variable != "(Intercept)")
-
-prefiltration_results  <- df_no_signal %>% 
-  select(outcome, variables_final_model$variable) %>%
-  lm(outcome ~ ., data = .)
-
-tidy(prefiltration_results)
+prefiltration_results
 ```
 
 We can also calculate the R2 for this model.
 
 ```{r}
-glance(prefiltration_results)
+prefiltration_model$r.squared
 ```
 
 ## Data with a true signal 
@@ -258,7 +252,11 @@ univariable_outcomes_filtered <- univariable_outcomes %>%
   filter(p.value < 0.2)
 variables_for_stepwise <- univariable_outcomes_filtered %>%
   pull(variable)
-model_results$prefiltration <- stepwise_model(data = df_signal, variables = variables_for_stepwise)
+
+model_results$prefiltration <- stepwise_model(data = df_signal, variables = variables_for_stepwise) %>%
+  tidy() %>%
+  rename(variable = term)
+
 model_results$prefiltration %>%
   as_tibble()
 ```
