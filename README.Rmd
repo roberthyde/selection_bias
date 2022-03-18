@@ -4,6 +4,12 @@ output:
 ---
 <!-- badges: start -->
 <!-- badges: end -->
+---
+title: "Inferential modelling with wide data"
+output:
+  html_document:
+    df_print: paged
+---
 
 ```{r  global_options, echo=FALSE}
 knitr::opts_chunk$set(
@@ -21,6 +27,19 @@ Welcome to our workshop on inferential modelling with wide data. We hope you enj
 This workshop will cover the problems associated with inferential modelling of high dimensional, wide data, suggest approaches to overcome them and provide hands-on training in the implementation of regularisation techniques, covariate selection stability and triangulation.
 
 The following packages are required for these exercises. 
+
+```{r echo=FALSE, eval=FALSE}
+# The following packages will need to be installed If running for the first time.
+install.packages("Hmisc")
+install.packages("broom")
+install.packages("glmnet")
+install.packages("ncvreg")
+install.packages("bigstep")
+install.packages("rsample")
+install.packages("tidyverse")
+install.packages("stabiliser")
+```
+
 
 ```{r}
 library(Hmisc)
@@ -155,10 +174,26 @@ stepwise_model <- function(data, variables) {
     rename(variable = term)
 }
 
-prefiltration_results <- stepwise_model(data = df_no_signal, variables = variables_for_stepwise)
+stepwise_selected_vars <- stepwise_model(data = df_no_signal, variables = variables_for_stepwise)
+```
 
-prefiltration_results %>%
-  as_tibble()
+We can then extract the variables from this stepwise approach and refit in a final model. 
+
+```{r}
+variables_final_model <- stepwise_selected_vars %>%
+  filter(variable != "(Intercept)")
+
+prefiltration_results  <- df_no_signal %>% 
+  select(outcome, variables_final_model$variable) %>%
+  lm(outcome ~ ., data = .)
+
+tidy(prefiltration_results)
+```
+
+We can also calculate the R2 for this model.
+
+```{r}
+glance(prefiltration_results)
 ```
 
 ## Data with a true signal 
