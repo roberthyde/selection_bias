@@ -30,10 +30,10 @@ install.packages("glmnet")
 install.packages("ncvreg")
 install.packages("bigstep")
 install.packages("rsample")
+install.packages("rms")
 install.packages("tidyverse")
 install.packages("stabiliser")
 ```
-
 
 ```{r}
 library(Hmisc)
